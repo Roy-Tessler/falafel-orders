@@ -10,6 +10,7 @@ const ROUTES = [
 	{ pattern: /^\/stats$/, module: './ui/stats.js', keys: [] },
 	{ pattern: /^\/stats\/(\d{4}-\d{2}-\d{2})$/, module: './ui/stats.js', keys: ['date'] },
 	{ pattern: /^\/backup$/, module: './ui/backup.js', keys: [] },
+	{ pattern: /^\/demo$/, module: './ui/demo.js', keys: [] },
 ];
 
 function match(path) {
