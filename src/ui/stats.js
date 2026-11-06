@@ -24,7 +24,7 @@ function eveningSection(orders) {
 			stat('הזמנות', String(s.orderCount)),
 			stat('סה"כ', formatMoney(s.total)),
 			stat('ממוצע להזמנה', formatMoney(s.average)),
-			stat('ביט', formatMoney(s.paidBit)),
+			stat('פייבוקס', formatMoney(s.paidPaybox)),
 			stat('מזומן', formatMoney(s.paidCash)),
 			stat('לא שולם', formatMoney(s.unpaid), s.unpaid > 0 ? 'unpaid' : ''),
 		),

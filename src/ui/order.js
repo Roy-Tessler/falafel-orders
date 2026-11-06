@@ -3,14 +3,24 @@ import { h, formatMoney, confirmPanel, showToast, SAVE_FAILED } from '../dom.js'
 
 const DRAFT_KEY = 'draft';
 
+const PAYMENT_CHOICES = [
+	[PAYMENT.UNPAID, 'לא שולם'],
+	[PAYMENT.PAYBOX, 'פייבוקס'],
+	[PAYMENT.CASH, 'מזומן'],
+];
+
 function emptyDraft() {
-	return { customerName: '', note: '', lines: [] };
+	return { customerName: '', note: '', lines: [], payment: PAYMENT.UNPAID };
 }
 
 function loadDraft() {
 	try {
 		const saved = JSON.parse(localStorage.getItem(DRAFT_KEY));
-		return saved && Array.isArray(saved.lines) ? saved : emptyDraft();
+		if (!saved || !Array.isArray(saved.lines)) {
+			return emptyDraft();
+		}
+		const known = PAYMENT_CHOICES.some(([value]) => value === saved.payment);
+		return { ...saved, payment: known ? saved.payment : PAYMENT.UNPAID };
 	} catch {
 		return emptyDraft();
 	}
@@ -87,6 +97,22 @@ function layout(title, form, actions) {
 	);
 }
 
+function paymentChoice(state, onChange) {
+	const buttons = PAYMENT_CHOICES.map(([value, label]) => h('button', {
+		class: `choice choice-${value}`,
+		onclick: () => {
+			state.payment = value;
+			refresh();
+			onChange();
+		},
+	}, label));
+	function refresh() {
+		buttons.forEach((button, i) => button.setAttribute('aria-pressed', String(PAYMENT_CHOICES[i][0] === state.payment)));
+	}
+	refresh();
+	return { element: h('div', { class: 'payment-choice', role: 'group', 'aria-label': 'תשלום' }, buttons), refresh };
+}
+
 function showErrors(form, draft) {
 	const errors = validateOrder(draft);
 	form.errorsBox.replaceChildren(...errors.map(message => h('div', {}, message)));
@@ -96,35 +122,33 @@ function showErrors(form, draft) {
 function renderNew(store, menu) {
 	const state = loadDraft();
 	const form = buildForm(menu, state, () => storeDraft(state));
-	const saveUnpaid = h('button', { class: 'primary grow' }, 'שמור');
-	const saveCash = h('button', { class: 'grow' }, 'שמור – שולם במזומן');
+	const payment = paymentChoice(state, () => storeDraft(state));
+	const saveButton = h('button', { class: 'primary save-button' }, 'שמור');
 
-	async function save(payment) {
-		if (saveUnpaid.disabled || !showErrors(form, state)) {
+	async function save() {
+		if (saveButton.disabled || !showErrors(form, state)) {
 			return;
 		}
-		saveUnpaid.disabled = true;
-		saveCash.disabled = true;
+		saveButton.disabled = true;
 		try {
-			await store.saveOrder(createOrder({ ...state, payment }, new Date(), () => crypto.randomUUID()));
+			await store.saveOrder(createOrder(state, new Date(), () => crypto.randomUUID()));
 			Object.assign(state, emptyDraft());
 			clearDraft();
 			form.nameInput.value = '';
 			form.noteInput.value = '';
 			form.refresh();
+			payment.refresh();
 			showToast('ההזמנה נשמרה');
 		} catch (error) {
 			console.error(error);
 			form.errorsBox.replaceChildren(h('div', {}, SAVE_FAILED));
 		} finally {
-			saveUnpaid.disabled = false;
-			saveCash.disabled = false;
+			saveButton.disabled = false;
 			form.nameInput.focus();
 		}
 	}
-	saveUnpaid.addEventListener('click', () => save(PAYMENT.UNPAID));
-	saveCash.addEventListener('click', () => save(PAYMENT.CASH));
-	const view = layout('הזמנה חדשה', form, h('div', { class: 'row' }, saveUnpaid, saveCash));
+	saveButton.addEventListener('click', save);
+	const view = layout('הזמנה חדשה', form, h('div', {}, payment.element, saveButton));
 	setTimeout(() => form.nameInput.focus(), 0);
 	return view;
 }

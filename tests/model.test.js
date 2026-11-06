@@ -13,7 +13,7 @@ test('DEFAULT_MENU has the real menu', () => {
 		{ name: 'נקניקייה בלחמניה', price: 15 },
 		{ name: 'כדור פלאפל', price: 2 },
 	]);
-	assert.deepEqual(PAYMENT, { UNPAID: 'unpaid', BIT: 'bit', CASH: 'cash' });
+	assert.deepEqual(PAYMENT, { UNPAID: 'unpaid', PAYBOX: 'paybox', CASH: 'cash' });
 });
 
 test('eveningKey uses local date, and 00:05 belongs to the new day', () => {
@@ -68,9 +68,9 @@ test('createOrder with unpaid has null paidAt', () => {
 test('setPayment sets and clears paidAt and rejects unknown states', () => {
 	const now = new Date(2026, 10, 7, 9, 0);
 	const base = { payment: 'unpaid', paidAt: null };
-	assert.equal(setPayment(base, 'bit', now).paidAt, now.toISOString());
-	assert.equal(setPayment(base, 'bit', now).payment, 'bit');
-	assert.equal(setPayment({ payment: 'bit', paidAt: 'x' }, 'unpaid', now).paidAt, null);
+	assert.equal(setPayment(base, 'paybox', now).paidAt, now.toISOString());
+	assert.equal(setPayment(base, 'paybox', now).payment, 'paybox');
+	assert.equal(setPayment({ payment: 'paybox', paidAt: 'x' }, 'unpaid', now).paidAt, null);
 	assert.throws(() => setPayment(base, 'card', now), RangeError);
 });
 

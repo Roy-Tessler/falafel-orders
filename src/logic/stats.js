@@ -80,7 +80,7 @@ export function eveningSummary(orders) {
 		orderCount: orders.length,
 		total,
 		average: orders.length === 0 ? 0 : Math.round(total / orders.length),
-		paidBit: sumWhere(orders, o => o.payment === PAYMENT.BIT),
+		paidPaybox: sumWhere(orders, o => o.payment === PAYMENT.PAYBOX),
 		paidCash: sumWhere(orders, o => o.payment === PAYMENT.CASH),
 		unpaid: sumWhere(orders, o => o.payment === PAYMENT.UNPAID),
 		items: itemTotals(orders),

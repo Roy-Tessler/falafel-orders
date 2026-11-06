@@ -2,12 +2,12 @@
 
 ## Intent
 
-A family runs a falafel stand two evenings a week in their home town. The owner (called "the operator" below) takes every order by hand. She asks for the customer's full name, writes the items, and adds up the total on paper. Most customers pay later through Bit, usually within one or two days. Some customers pay cash at the stand when they order.
+A family runs a falafel stand two evenings a week in their home town. The owner (called "the operator" below) takes every order by hand. She asks for the customer's full name, writes the items, and adds up the total on paper. Most customers pay later through PayBox, usually within one or two days. Some customers pay cash at the stand when they order.
 
 The program replaces the paper. It must do three things:
 
 1. Take an order fast: name, items, total.
-2. Let the operator match Bit transfers to orders and see who still owes money.
+2. Let the operator match PayBox transfers to orders and see who still owes money.
 3. Show what sold on each evening and over time, so the operator can decide how much to prepare and which items to keep.
 
 ## Users and devices
@@ -39,25 +39,25 @@ A single web app that runs fully in the browser with no server. It works without
 - Each tap adds one unit. The order list shows quantity, line total, and minus and plus buttons.
 - The order total updates on every change and is large and easy to read.
 - An optional free-text note per order (for example "no tahini").
-- Two save buttons: "save" (unpaid, the default) and "save, paid cash". Each stores the order with the current time and clears the screen for the next customer.
-- An order has one payment state: unpaid, paid by Bit, or paid in cash.
+- A payment choice with three options: unpaid (the default), PayBox, and cash. One "save" button stores the order with the chosen payment and the current time, clears the screen for the next customer, and resets the choice to unpaid.
+- An order has one payment state: unpaid, paid by PayBox, or paid in cash.
 - The operator can open a saved order and edit or delete it. Delete asks for confirmation.
 
 Mockup reference: `.superpowers/brainstorm/313-1793967489/content/screens.html`, screen 1. Prices in the mockup are placeholders.
 
 ### 3. Evening payments
 
-- Lists every order of one evening: name, amount, and payment state. Each unpaid order has two buttons: "Bit" and "cash".
-- Shows totals: paid by Bit, paid in cash, and unpaid.
+- Lists every order of one evening: name, amount, and payment state. Each unpaid order has two buttons: "PayBox" and "cash".
+- Shows totals: paid by PayBox, paid in cash, and unpaid.
 - Search by name. Filter to "unpaid only".
-- The operator works next to the Bit app: she finds a transfer by name and amount and taps "Bit". If she made a mistake, she can set the order back to unpaid.
+- The operator works next to the PayBox app: she finds a transfer by name and amount and taps "PayBox". If she made a mistake, she can set the order back to unpaid.
 - An evening stays open for payment marking forever. There is no "close" step that locks it.
 
 Mockup reference: same file, screen 2.
 
 ### 4. Everyone who owes money
 
-- One list of all unpaid orders from all evenings, grouped by evening date, with name, amount, and the same "Bit" and "cash" buttons.
+- One list of all unpaid orders from all evenings, grouped by evening date, with name, amount, and the same "PayBox" and "cash" buttons.
 - Shows the total unpaid amount.
 
 ### 5. Menu
@@ -73,7 +73,7 @@ Mockup reference: same file, screen 2.
 Per evening:
 
 - Number of orders, total amount, average order amount.
-- Amount paid by Bit, amount paid in cash, and amount still unpaid. The cash amount lets her count the cash box at the end of the evening.
+- Amount paid by PayBox, amount paid in cash, and amount still unpaid. The cash amount lets her count the cash box at the end of the evening.
 - Each item: quantity sold and amount, sorted by quantity.
 - Orders per half hour, so the operator sees the busy times.
 
@@ -96,7 +96,7 @@ Data lives only on the device. To protect against loss:
 
 ## Non-goals
 
-- No payment processing, and no connection to Bit.
+- No payment processing, and no connection to PayBox.
 - No login, no user accounts, no multiple devices or sync.
 - No customer database. The name on each order is free text.
 - No printing of receipts.

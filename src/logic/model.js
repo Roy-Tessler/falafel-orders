@@ -1,4 +1,4 @@
-export const PAYMENT = Object.freeze({ UNPAID: 'unpaid', BIT: 'bit', CASH: 'cash' });
+export const PAYMENT = Object.freeze({ UNPAID: 'unpaid', PAYBOX: 'paybox', CASH: 'cash' });
 
 export const DEFAULT_MENU = Object.freeze([
 	{ name: 'מנה פלאפל', price: 25 },

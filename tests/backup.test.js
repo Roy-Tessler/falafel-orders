@@ -39,11 +39,11 @@ for (const bad of BAD) {
 }
 
 test('csv has BOM, header, Hebrew payment, and neutralizes formulas', () => {
-	const csv = ordersToCsv([{ ...order, customerName: '=HYPERLINK("x")', note: 'בלי "טחינה"', payment: 'bit' }]);
+	const csv = ordersToCsv([{ ...order, customerName: '=HYPERLINK("x")', note: 'בלי "טחינה"', payment: 'paybox' }]);
 	assert.ok(csv.startsWith('\uFEFF"תאריך","שעה","שם","פריטים","סכום","תשלום","הערה"\r\n'));
 	assert.ok(csv.includes('"\'=HYPERLINK(""x"")"'));
 	assert.ok(csv.includes('"בלי ""טחינה"""'));
-	assert.ok(csv.includes('"ביט"'));
+	assert.ok(csv.includes('"פייבוקס"'));
 });
 
 test('csv row has date, time, items, and total', () => {
@@ -62,8 +62,8 @@ test('reminder after 7 days only when orders exist', () => {
 const BAD_CONTENT = [
 	['menu item without id', { menu: [{ name: 'x', price: 1, position: 0, active: true }], orders: [] }],
 	['menu item with fractional price', { menu: [{ id: 'm', name: 'x', price: 1.5, position: 0, active: true }], orders: [] }],
-	['order without customerName', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', lines: [], payment: 'bit' }] }],
-	['order line without qty', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', customerName: 'x', lines: [{ itemId: 'a', name: 'x', price: 1 }], payment: 'bit' }] }],
+	['order without customerName', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', lines: [], payment: 'paybox' }] }],
+	['order line without qty', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', customerName: 'x', lines: [{ itemId: 'a', name: 'x', price: 1 }], payment: 'paybox' }] }],
 ];
 for (const [label, content] of BAD_CONTENT) {
 	test(`parseBackup rejects ${label}`, () => {

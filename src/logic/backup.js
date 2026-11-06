@@ -6,7 +6,7 @@ const INVALID_MESSAGE = 'הקובץ אינו גיבוי תקין';
 const REMINDER_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-const PAYMENT_LABELS = { [PAYMENT.UNPAID]: 'לא שולם', [PAYMENT.BIT]: 'ביט', [PAYMENT.CASH]: 'מזומן' };
+const PAYMENT_LABELS = { [PAYMENT.UNPAID]: 'לא שולם', [PAYMENT.PAYBOX]: 'פייבוקס', [PAYMENT.CASH]: 'מזומן' };
 const CSV_HEADER = ['תאריך', 'שעה', 'שם', 'פריטים', 'סכום', 'תשלום', 'הערה'];
 
 export class BackupError extends Error {

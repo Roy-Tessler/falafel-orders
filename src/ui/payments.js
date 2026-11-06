@@ -3,7 +3,7 @@ import { eveningSummary } from '../logic/stats.js';
 import { h, formatMoney, formatDate, formatTime, showToast, SAVE_FAILED } from '../dom.js';
 
 const TAP_GUARD_MS = 600;
-const PAID_LABELS = { [PAYMENT.BIT]: 'שולם בביט', [PAYMENT.CASH]: 'שולם במזומן' };
+const PAID_LABELS = { [PAYMENT.PAYBOX]: 'שולם בפייבוקס', [PAYMENT.CASH]: 'שולם במזומן' };
 
 let s_busy = false;
 let s_lastChangeAt = -Infinity;
@@ -29,7 +29,7 @@ export function paymentRow(store, order, onChange) {
 	}
 	const status = order.payment === PAYMENT.UNPAID
 		? h('div', { class: 'row' },
-			h('button', { class: 'pay-bit', onclick: () => update(PAYMENT.BIT) }, 'ביט'),
+			h('button', { class: 'pay-paybox', onclick: () => update(PAYMENT.PAYBOX) }, 'פייבוקס'),
 			h('button', { class: 'pay-cash', onclick: () => update(PAYMENT.CASH) }, 'מזומן'))
 		: h('div', { class: 'row' },
 			h('span', { class: `paid paid-${order.payment}` }, PAID_LABELS[order.payment]),
@@ -45,7 +45,7 @@ export function paymentRow(store, order, onChange) {
 function totalsBox(orders) {
 	const s = eveningSummary(orders);
 	return h('div', { class: 'totals row' },
-		h('div', { class: 'total-cell' }, h('div', { class: 'muted' }, 'שולם בביט'), h('strong', {}, formatMoney(s.paidBit))),
+		h('div', { class: 'total-cell' }, h('div', { class: 'muted' }, 'שולם בפייבוקס'), h('strong', {}, formatMoney(s.paidPaybox))),
 		h('div', { class: 'total-cell' }, h('div', { class: 'muted' }, 'שולם במזומן'), h('strong', {}, formatMoney(s.paidCash))),
 		h('div', { class: 'total-cell' }, h('div', { class: 'muted' }, 'לא שולם'), h('strong', { class: s.unpaid > 0 ? 'unpaid' : '' }, formatMoney(s.unpaid))),
 	);

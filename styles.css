@@ -8,7 +8,7 @@
 	--accent: #e8a33d;
 	--danger: #c0392b;
 	--border: #e3d7c6;
-	--paid-bit: #1f6fb2;
+	--paid-paybox: #1f6fb2;
 	--paid-cash: #2f7d32;
 	--touch: 56px;
 	--radius: 10px;
@@ -302,9 +302,9 @@ th, td {
 	font-weight: 600;
 }
 
-.pay-bit {
-	color: var(--paid-bit);
-	border-color: var(--paid-bit);
+.pay-paybox {
+	color: var(--paid-paybox);
+	border-color: var(--paid-paybox);
 }
 
 .pay-cash {
@@ -312,8 +312,8 @@ th, td {
 	border-color: var(--paid-cash);
 }
 
-.paid-bit {
-	color: var(--paid-bit);
+.paid-paybox {
+	color: var(--paid-paybox);
 	font-weight: 600;
 }
 
@@ -405,4 +405,37 @@ select {
 
 .file-input {
 	display: none;
+}
+
+.payment-choice {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.choice[aria-pressed="true"] {
+	color: #fff;
+	font-weight: 700;
+}
+
+.choice-unpaid[aria-pressed="true"] {
+	background: var(--danger);
+	border-color: var(--danger);
+}
+
+.choice-paybox[aria-pressed="true"] {
+	background: var(--paid-paybox);
+	border-color: var(--paid-paybox);
+}
+
+.choice-cash[aria-pressed="true"] {
+	background: var(--paid-cash);
+	border-color: var(--paid-cash);
+}
+
+.save-button {
+	width: 100%;
+	min-height: 64px;
+	font-size: 1.2rem;
 }
