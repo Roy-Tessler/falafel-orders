@@ -1,12 +1,19 @@
 export const PAYMENT = Object.freeze({ UNPAID: 'unpaid', PAYBOX: 'paybox', CASH: 'cash' });
 
 export const DEFAULT_MENU = Object.freeze([
-	{ name: 'מנה פלאפל', price: 25 },
-	{ name: "צ'יפס", price: 15 },
-	{ name: 'שתייה', price: 10 },
-	{ name: 'נקניקייה בלחמניה', price: 15 },
-	{ name: 'כדור פלאפל', price: 2 },
+	{ name: 'מנה פלאפל', price: 25, image: 'images/falafel.svg' },
+	{ name: "צ'יפס", price: 15, image: 'images/fries.svg' },
+	{ name: 'שתייה', price: 10, image: 'images/drink.svg' },
+	{ name: 'נקניקייה בלחמניה', price: 15, image: 'images/hotdog.svg' },
+	{ name: 'כדור פלאפל', price: 2, image: 'images/ball.svg' },
 ]);
+
+const BUNDLED_IMAGE = /^images\/[a-z0-9-]+\.svg$/;
+const PHOTO_IMAGE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+
+export function isValidImage(image) {
+	return typeof image === 'string' && (BUNDLED_IMAGE.test(image) || PHOTO_IMAGE.test(image));
+}
 
 const PRICE_ERROR = 'המחיר חייב להיות מספר שלם, 0 או יותר';
 const PAYMENT_VALUES = Object.values(PAYMENT);

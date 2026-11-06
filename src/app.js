@@ -1,6 +1,7 @@
 import { openStore, requestPersistence } from './store.js';
 import { startRouter } from './router.js';
 import { h } from './dom.js';
+import { loadFontSize, applyFontSize } from './fontSize.js';
 
 async function start() {
 	const root = document.getElementById('app');
@@ -20,5 +21,6 @@ function registerServiceWorker() {
 	}
 }
 
+applyFontSize(loadFontSize());
 registerServiceWorker();
 start();

@@ -19,7 +19,7 @@
 }
 
 html {
-	font-size: 18px;
+	font-size: 20px;
 }
 
 body {
@@ -35,7 +35,7 @@ nav {
 	top: 0;
 	z-index: 10;
 	display: flex;
-	overflow-x: auto;
+	flex-wrap: wrap;
 	gap: 4px;
 	padding: 6px 8px;
 	background: var(--text);
@@ -51,6 +51,24 @@ nav a {
 	color: #fff;
 	text-decoration: none;
 	white-space: nowrap;
+}
+
+nav a.brand {
+	gap: 8px;
+	font-weight: 700;
+	color: var(--accent);
+	margin-inline-end: auto;
+}
+
+nav a.brand img {
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+}
+
+nav a.brand.active {
+	background: none;
+	color: var(--accent);
 }
 
 nav a.active {
@@ -208,6 +226,7 @@ th, td {
 .item-button {
 	flex-direction: column;
 	min-height: 88px;
+	gap: 4px;
 	padding: 10px;
 	font-size: 1.1rem;
 	background: #fff3df;
@@ -438,4 +457,54 @@ select {
 	width: 100%;
 	min-height: 64px;
 	font-size: 1.2rem;
+}
+
+.item-image {
+	width: 72px;
+	height: 72px;
+	object-fit: cover;
+	border-radius: 12px;
+}
+
+.item-name {
+	font-weight: 600;
+}
+
+.image-control {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.menu-thumb {
+	width: 56px;
+	height: 56px;
+	object-fit: cover;
+	border-radius: 10px;
+	border: 1px solid var(--border);
+}
+
+.menu-thumb.empty {
+	background: #f1e8da;
+}
+
+.font-choice[aria-pressed="true"] {
+	background: var(--primary);
+	border-color: var(--primary);
+	color: #fff;
+	font-weight: 700;
+}
+
+.font-normal {
+	font-size: 20px;
+}
+
+.font-large {
+	font-size: 23px;
+}
+
+.font-xlarge {
+	font-size: 26px;
 }

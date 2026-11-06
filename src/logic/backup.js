@@ -1,4 +1,4 @@
-import { PAYMENT, orderTotal } from './model.js';
+import { PAYMENT, orderTotal, isValidImage } from './model.js';
 
 const APP_ID = 'falafel-orders';
 const BACKUP_VERSION = 1;
@@ -40,7 +40,8 @@ function isValidMenuItem(item) {
 		&& typeof item.name === 'string'
 		&& isWholeNumber(item.price)
 		&& Number.isFinite(item.position)
-		&& typeof item.active === 'boolean';
+		&& typeof item.active === 'boolean'
+		&& (item.image === undefined || isValidImage(item.image));
 }
 
 function isValidLine(line) {

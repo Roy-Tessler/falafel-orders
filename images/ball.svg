@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+	<ellipse cx="60" cy="100" rx="34" ry="7" fill="#000" opacity="0.12"/>
+	<circle cx="60" cy="60" r="36" fill="#8c5222"/>
+	<circle cx="60" cy="60" r="36" fill="url(#shine)"/>
+	<circle cx="46" cy="48" r="3" fill="#2f7d32"/>
+	<circle cx="70" cy="44" r="2.5" fill="#2f7d32"/>
+	<circle cx="76" cy="66" r="3" fill="#2f7d32"/>
+	<circle cx="52" cy="72" r="2.5" fill="#2f7d32"/>
+	<circle cx="62" cy="58" r="2" fill="#c98a4b"/>
+	<circle cx="44" cy="62" r="2" fill="#c98a4b"/>
+	<defs>
+		<radialGradient id="shine" cx="0.35" cy="0.3" r="0.7">
+			<stop offset="0" stop-color="#c98a4b" stop-opacity="0.9"/>
+			<stop offset="1" stop-color="#8c5222" stop-opacity="0"/>
+		</radialGradient>
+	</defs>
+</svg>

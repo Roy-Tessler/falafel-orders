@@ -107,7 +107,7 @@ class Store {
 		}
 		const tx = this.m_db.transaction('menu', 'readwrite');
 		DEFAULT_MENU.forEach((item, position) => {
-			tx.objectStore('menu').put({ id: crypto.randomUUID(), name: item.name, price: item.price, position, active: true });
+			tx.objectStore('menu').put({ id: crypto.randomUUID(), name: item.name, price: item.price, image: item.image, position, active: true });
 		});
 		await done(tx);
 	}

@@ -54,6 +54,7 @@ function lineRow(line, onChange) {
 function itemGrid(menu, onAdd) {
 	return h('div', { class: 'item-grid' },
 		menu.map(item => h('button', { class: 'item-button', onclick: () => onAdd(item) },
+			item.image ? h('img', { class: 'item-image', src: item.image, alt: '' }) : null,
 			h('span', { class: 'item-name' }, item.name),
 			h('span', { class: 'item-price' }, formatMoney(item.price)),
 		)),

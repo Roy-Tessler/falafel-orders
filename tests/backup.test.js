@@ -61,6 +61,7 @@ test('reminder after 7 days only when orders exist', () => {
 
 const BAD_CONTENT = [
 	['menu item without id', { menu: [{ name: 'x', price: 1, position: 0, active: true }], orders: [] }],
+	['menu item with a foreign image', { menu: [{ id: 'm', name: 'x', price: 1, position: 0, active: true, image: 'https://evil.example/x.png' }], orders: [] }],
 	['menu item with fractional price', { menu: [{ id: 'm', name: 'x', price: 1.5, position: 0, active: true }], orders: [] }],
 	['order without customerName', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', lines: [], payment: 'paybox' }] }],
 	['order line without qty', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', customerName: 'x', lines: [{ itemId: 'a', name: 'x', price: 1 }], payment: 'paybox' }] }],
@@ -71,3 +72,11 @@ for (const [label, content] of BAD_CONTENT) {
 		assert.throws(() => parseBackup(text), err => err instanceof BackupError);
 	});
 }
+
+test('parseBackup keeps menu items with a photo or no image', () => {
+	const menu = [
+		{ id: 'a', name: 'x', price: 1, position: 0, active: true, image: 'data:image/jpeg;base64,AAAA' },
+		{ id: 'b', name: 'y', price: 1, position: 1, active: true },
+	];
+	assert.deepEqual(parseBackup(JSON.stringify({ app: 'falafel-orders', version: 1, menu, orders: [] })).menu, menu);
+});

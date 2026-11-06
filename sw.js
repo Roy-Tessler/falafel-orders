@@ -1,4 +1,4 @@
-const CACHE = 'falafel-v4';
+const CACHE = 'falafel-v5';
 const FILES = [
 	'./',
 	'./index.html',
@@ -7,7 +7,15 @@ const FILES = [
 	'./icons/icon.svg',
 	'./icons/icon-192.png',
 	'./icons/icon-512.png',
+	'./images/falafel.svg',
+	'./images/fries.svg',
+	'./images/drink.svg',
+	'./images/hotdog.svg',
+	'./images/ball.svg',
 	'./src/app.js',
+	'./src/photo.js',
+	'./src/fontSize.js',
+	'./src/logic/settings.js',
 	'./src/router.js',
 	'./src/dom.js',
 	'./src/store.js',

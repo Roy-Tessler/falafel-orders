@@ -1,9 +1,59 @@
 import { validateMenuItem } from '../logic/model.js';
 import { h, confirmPanel, showToast, SAVE_FAILED } from '../dom.js';
+import { photoToDataUrl } from '../photo.js';
 
 function parsePrice(text) {
 	const trimmed = text.trim();
 	return trimmed === '' ? NaN : Number(trimmed);
+}
+
+function withImage(item, image) {
+	const copy = { ...item };
+	if (image === undefined) {
+		delete copy.image;
+	} else {
+		copy.image = image;
+	}
+	return copy;
+}
+
+function imageControl(store, item) {
+	const box = h('div', { class: 'image-control' });
+	async function setImage(image) {
+		const candidate = withImage(item, image);
+		try {
+			await store.saveMenuItem(candidate);
+		} catch (error) {
+			console.error(error);
+			showToast(SAVE_FAILED, true);
+			return;
+		}
+		delete item.image;
+		Object.assign(item, candidate);
+		refresh();
+	}
+	const input = h('input', { type: 'file', accept: 'image/*', class: 'file-input', onchange: async e => {
+		const file = e.target.files[0];
+		e.target.value = '';
+		if (!file) {
+			return;
+		}
+		try {
+			await setImage(await photoToDataUrl(file));
+		} catch (error) {
+			console.error(error);
+			showToast('לא ניתן לקרוא את התמונה', true);
+		}
+	} });
+	function refresh() {
+		box.replaceChildren(
+			item.image ? h('img', { class: 'menu-thumb', src: item.image, alt: '' }) : h('div', { class: 'menu-thumb empty' }),
+			h('label', { class: 'button small' }, item.image ? 'החלף תמונה' : 'הוסף תמונה', input),
+			item.image ? h('button', { class: 'small', onclick: () => setImage(undefined) }, 'הסר תמונה') : null,
+		);
+	}
+	refresh();
+	return box;
 }
 
 function editableRow(store, item, actions) {
@@ -45,6 +95,7 @@ function editableRow(store, item, actions) {
 			h('button', { class: 'small danger', onclick: () => row.append(confirmPanel(
 				`להסיר את ${item.name || 'הפריט'} מהתפריט? הזמנות קודמות לא ישתנו.`, 'כן, להסיר', actions.remove)) }, 'הסר'),
 		),
+		item.name ? imageControl(store, item) : null,
 		errorBox,
 	);
 	return row;

@@ -1,6 +1,6 @@
-# Falafel Orders
+# פלאפל בחצר: Orders
 
-An offline Hebrew web app for taking falafel orders, tracking PayBox and cash payments, and showing sales statistics. It runs in the browser of one Android tablet. It has no server and no runtime dependencies.
+An offline Hebrew web app for the falafel stand פלאפל בחצר. It takes falafel orders, tracking PayBox and cash payments, and showing sales statistics. It runs in the browser of one Android tablet. It has no server and no runtime dependencies.
 
 The design is in `docs/2026-11-06-falafel-orders-design.md`.
 

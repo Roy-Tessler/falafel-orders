@@ -2,16 +2,16 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
 	PAYMENT, DEFAULT_MENU, eveningKey, addItem, changeQty, orderTotal,
-	validateOrder, createOrder, setPayment, validateMenuItem,
+	validateOrder, createOrder, setPayment, validateMenuItem, isValidImage,
 } from '../src/logic/model.js';
 
 test('DEFAULT_MENU has the real menu', () => {
 	assert.deepEqual(DEFAULT_MENU, [
-		{ name: 'מנה פלאפל', price: 25 },
-		{ name: "צ'יפס", price: 15 },
-		{ name: 'שתייה', price: 10 },
-		{ name: 'נקניקייה בלחמניה', price: 15 },
-		{ name: 'כדור פלאפל', price: 2 },
+		{ name: 'מנה פלאפל', price: 25, image: 'images/falafel.svg' },
+		{ name: "צ'יפס", price: 15, image: 'images/fries.svg' },
+		{ name: 'שתייה', price: 10, image: 'images/drink.svg' },
+		{ name: 'נקניקייה בלחמניה', price: 15, image: 'images/hotdog.svg' },
+		{ name: 'כדור פלאפל', price: 2, image: 'images/ball.svg' },
 	]);
 	assert.deepEqual(PAYMENT, { UNPAID: 'unpaid', PAYBOX: 'paybox', CASH: 'cash' });
 });
@@ -80,4 +80,13 @@ test('validateMenuItem rejects empty names and bad prices', () => {
 	assert.deepEqual(validateMenuItem({ name: ' ', price: 7 }), ['חסר שם פריט']);
 	assert.deepEqual(validateMenuItem({ name: 'x', price: 7.5 }), [PRICE_ERR]);
 	assert.deepEqual(validateMenuItem({ name: 'x', price: -1 }), [PRICE_ERR]);
+});
+
+test('isValidImage accepts bundled images and photo data urls only', () => {
+	assert.equal(isValidImage('images/falafel.svg'), true);
+	assert.equal(isValidImage('data:image/jpeg;base64,AAAA'), true);
+	assert.equal(isValidImage(''), false);
+	assert.equal(isValidImage('javascript:alert(1)'), false);
+	assert.equal(isValidImage('https://example.com/x.png'), false);
+	assert.equal(isValidImage('images/../../x.svg'), false);
 });

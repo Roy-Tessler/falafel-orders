@@ -1,6 +1,8 @@
 import { toBackupJson, parseBackup, ordersToCsv, BackupError } from '../logic/backup.js';
 import { eveningKey } from '../logic/model.js';
 import { h, confirmPanel, showToast } from '../dom.js';
+import { FONT_SIZES } from '../logic/settings.js';
+import { loadFontSize, saveFontSize } from '../fontSize.js';
 
 function download(fileName, content, type) {
 	const url = URL.createObjectURL(new Blob([content], { type }));
@@ -64,6 +66,19 @@ function restoreControl(store, messageBox, onDone) {
 	return h('label', { class: 'button' }, 'שחזור מגיבוי', input);
 }
 
+function fontSizeControl() {
+	const buttons = FONT_SIZES.map(size => h('button', { class: `font-choice font-${size.key}`, onclick: () => {
+		saveFontSize(size.key);
+		refresh();
+	} }, size.label));
+	function refresh() {
+		const current = loadFontSize();
+		buttons.forEach((button, i) => button.setAttribute('aria-pressed', String(FONT_SIZES[i].key === current)));
+	}
+	refresh();
+	return h('div', { class: 'card' }, h('h2', {}, 'גודל טקסט'), h('div', { class: 'payment-choice' }, buttons));
+}
+
 export async function render(store) {
 	const view = h('section', {});
 	const messageBox = h('div', {});
@@ -75,7 +90,9 @@ export async function render(store) {
 			refresh();
 		} }, label);
 		view.replaceChildren(
-			h('h1', {}, 'גיבוי'),
+			h('h1', {}, 'הגדרות'),
+			fontSizeControl(),
+			h('h2', {}, 'גיבוי'),
 			h('p', {}, 'כל הנתונים שמורים רק במכשיר הזה. שמרו גיבוי פעם בשבוע, למשל בגוגל דרייב או בוואטסאפ לעצמכם.'),
 			status,
 			h('div', { class: 'card row' }, exportButton('שמור גיבוי', 'json'), exportButton('ייצוא לאקסל', 'csv')),
