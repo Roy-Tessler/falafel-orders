@@ -8,6 +8,7 @@ const METHOD_LABELS = { [METHOD.PAYBOX]: 'פייבוקס', [METHOD.CASH]: 'מז�
 
 let s_busy = false;
 let s_lastChangeAt = -Infinity;
+let s_flashId = null;
 
 async function applyChange(store, makeOrder, onChange) {
 	if (s_busy || performance.now() - s_lastChangeAt < TAP_GUARD_MS) {
@@ -25,6 +26,7 @@ async function applyChange(store, makeOrder, onChange) {
 		s_busy = false;
 	}
 	s_lastChangeAt = performance.now();
+	s_flashId = updated.id;
 	onChange(updated);
 }
 
@@ -78,6 +80,10 @@ function actionsBox(store, order, onChange, row) {
 
 export function paymentRow(store, order, onChange) {
 	const row = h('div', { class: `pay-row ${paymentStatus(order)}` });
+	if (order.id === s_flashId) {
+		s_flashId = null;
+		row.classList.add('just-changed');
+	}
 	setChildren(row,
 		h('div', { class: 'pay-main' },
 			h('span', { class: 'muted pay-time' }, formatTime(order.createdAt)),

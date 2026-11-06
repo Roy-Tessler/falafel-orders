@@ -1,13 +1,14 @@
 import { addItem, changeQty, orderTotal, validateOrder, createOrder } from '../logic/model.js';
 import { validatePayments } from '../logic/payments.js';
-import { h, icon, formatMoney, confirmPanel, showToast, SAVE_FAILED } from '../dom.js';
+import { h, icon, formatMoney, confirmPanel, showToast, playAnimation, SAVE_FAILED } from '../dom.js';
 import { emptyDraft, loadDraft, storeDraft, clearDraft } from './draft.js';
 import { paymentChoice, draftPayments } from './paymentChoice.js';
 import { customerPicker } from './customerPicker.js';
 
-function lineRow(line, onChange) {
-	return h('div', { class: 'order-line' },
-		h('span', { class: 'qty-badge' }, String(line.qty)),
+function lineRow(line, flash, onChange) {
+	const flashed = flash?.itemId === line.itemId;
+	return h('div', { class: flashed && flash.isNew ? 'order-line line-new' : 'order-line' },
+		h('span', { class: flashed && !flash.isNew ? 'qty-badge bump' : 'qty-badge' }, String(line.qty)),
 		h('span', { class: 'grow line-name' }, line.name),
 		h('div', { class: 'stepper' },
 			h('button', { class: 'step-button', 'aria-label': 'הוסף', onclick: () => onChange(line.itemId, 1) }, icon('plus')),
@@ -36,15 +37,23 @@ function buildForm(menu, state, onChange) {
 	const noteInput = h('input', { placeholder: 'הערה (לא חובה)', value: state.note,
 		oninput: e => { state.note = e.target.value; onChange(); } });
 
+	let flash = null;
 	function refresh() {
-		linesBox.replaceChildren(...state.lines.map(line => lineRow(line, (itemId, delta) => {
+		linesBox.replaceChildren(...state.lines.map(line => lineRow(line, flash, (itemId, delta) => {
+			flash = { itemId, isNew: false };
 			state.lines = changeQty(state.lines, itemId, delta);
 			refresh();
 			onChange();
 		})));
-		totalBox.textContent = `סה"כ: ${formatMoney(orderTotal(state.lines))}`;
+		flash = null;
+		const text = `סה"כ: ${formatMoney(orderTotal(state.lines))}`;
+		if (totalBox.textContent && totalBox.textContent !== text) {
+			playAnimation(totalBox, 'pop');
+		}
+		totalBox.textContent = text;
 	}
 	const grid = itemGrid(menu, item => {
+		flash = { itemId: item.id, isNew: !state.lines.some(l => l.itemId === item.id) };
 		state.lines = addItem(state.lines, item);
 		refresh();
 		onChange();
@@ -82,6 +91,7 @@ function resetForm(state, parts) {
 	parts.form.refresh();
 	parts.payment.refresh();
 	parts.picker.update('');
+	playAnimation(parts.form.linesBox.parentElement, 'fade-in');
 }
 
 function renderNew(store, menu, orders) {

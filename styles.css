@@ -706,3 +706,67 @@ select {
 	border-top: 2px solid var(--text);
 	color: var(--paid-cash);
 }
+
+
+@keyframes fade-in {
+	from { opacity: 0; transform: translateY(6px); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes slide-in {
+	from { opacity: 0; transform: translateY(-10px); }
+	to { opacity: 1; transform: none; }
+}
+
+@keyframes pop {
+	50% { transform: scale(1.12); }
+}
+
+@keyframes toast-in {
+	from { opacity: 0; transform: translate(-50%, 16px); }
+	to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes paid-flash {
+	from { background: #d7efd8; }
+	to { background: transparent; }
+}
+
+#app > *, .fade-in {
+	animation: fade-in 0.15s ease-out;
+}
+
+button {
+	transition: transform 0.08s ease-out, background-color 0.15s, color 0.15s;
+}
+
+button:active:not(:disabled) {
+	transform: scale(0.96);
+}
+
+.line-new, .confirm {
+	animation: slide-in 0.18s ease-out;
+}
+
+.qty-badge.bump, .big-total.pop {
+	animation: pop 0.2s ease-out;
+}
+
+.big-total {
+	transform-origin: right center;
+}
+
+.toast {
+	animation: toast-in 0.2s ease-out;
+}
+
+.pay-row.just-changed {
+	animation: paid-flash 0.8s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation: none !important;
+		transition: none !important;
+	}
+}

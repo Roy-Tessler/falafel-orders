@@ -75,6 +75,12 @@ export function confirmPanel(message, yesLabel, onYes, onNo) {
 	return panel;
 }
 
+export function playAnimation(el, className) {
+	el.classList.remove(className);
+	void el.offsetWidth;
+	el.classList.add(className);
+}
+
 export const SAVE_FAILED = 'השמירה נכשלה, נסו שוב';
 
 export function showToast(message, isError = false) {
