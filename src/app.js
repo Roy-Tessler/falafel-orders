@@ -14,4 +14,11 @@ async function start() {
 	}
 }
 
+function registerServiceWorker() {
+	if ('serviceWorker' in navigator) {
+		navigator.serviceWorker.register('./sw.js').catch(error => console.error(error));
+	}
+}
+
+registerServiceWorker();
 start();
