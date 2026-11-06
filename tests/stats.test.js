@@ -8,7 +8,7 @@ function o(date, hh, mm, payment, lines) {
 	seq += 1;
 	return {
 		id: `o${seq}`, eveningDate: date, createdAt: new Date(y, m - 1, d, hh, mm).toISOString(),
-		customerName: `c${seq}`, note: '', lines, payment, paidAt: payment === 'unpaid' ? null : 'x',
+		customerName: `c${seq}`, note: '', lines, payments: payment === 'unpaid' ? [] : [{ method: payment, amount: lines.reduce((s, l) => s + l.price * l.qty, 0), at: 'x' }],
 	};
 }
 const L = (itemId, name, price, qty) => ({ itemId, name, price, qty });
@@ -39,6 +39,7 @@ test('eveningSummary splits payments and ranks items', () => {
 	assert.equal(s.total, 93);
 	assert.equal(s.average, 31);
 	assert.equal(s.paidPaybox, 40);
+	assert.equal(s.paidTotal, 72);
 	assert.equal(s.paidCash, 32);
 	assert.equal(s.unpaid, 21);
 	assert.deepEqual(s.items.map(i => [i.name, i.qty, i.amount]), [['פלאפל', 3, 60], ['שתייה', 3, 21], ["צ'יפס", 1, 12]]);
@@ -92,4 +93,16 @@ test('trend takes the last N dates and filters by weekday', () => {
 	const thu = trend(orders, { lastN: 8, weekday: 4 });
 	assert.deepEqual(thu.dates, ['2026-10-29', '2026-11-05']);
 	assert.deepEqual(thu.items[0], { itemId: 'a', name: 'פלאפל', perDate: [4, 1], total: 5 });
+});
+
+test('partial payments count toward their method and leave a remainder', () => {
+	const partial = { ...o('2026-11-06', 19, 0, 'unpaid', [FALAFEL(2)]), payments: [{ method: 'cash', amount: 15, at: 'x' }, { method: 'paybox', amount: 5, at: 'x' }] };
+	const s = eveningSummary([partial]);
+	assert.equal(s.paidCash, 15);
+	assert.equal(s.paidPaybox, 5);
+	assert.equal(s.unpaid, 20);
+	assert.deepEqual(eveningList([partial]).map(e => e.unpaid), [20]);
+	const groups = unpaidByEvening([partial]);
+	assert.equal(groups[0].total, 20);
+	assert.equal(groups[0].orders.length, 1);
 });

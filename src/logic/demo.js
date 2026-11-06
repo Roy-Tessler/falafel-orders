@@ -1,13 +1,16 @@
-import { PAYMENT, eveningKey } from './model.js';
+import { eveningKey, orderTotal } from './model.js';
+import { METHOD } from './payments.js';
 
 const PAST_EVENINGS = 8;
-const DEMO_WEEKDAYS = [4, 6];
+const DEMO_WEEKDAYS = [1, 3];
 const TODAY_ORDERS = 6;
 const OPEN_MINUTES = 18 * 60;
 const SHIFT_MINUTES = 210;
 const MINUTE_MS = 60 * 1000;
 const UNPAID_CHANCE = { today: 0.5, lastEvening: 0.3, older: 0.05 };
-const PAYBOX_SHARE = 0.7;
+const PAYBOX_SHARE = 0.65;
+const SPLIT_SHARE = 0.1;
+const PARTIAL_CHANCE = 0.3;
 const ITEM_CHANCES = [0.85, 0.45, 0.5, 0.25, 0.15];
 const OTHER_ITEM_CHANCE = 0.2;
 const SMALL_ITEM_PRICE = 5;
@@ -57,26 +60,34 @@ function demoLines(menu, random) {
 	return lines;
 }
 
-function demoPayment(createdAt, unpaidChance, now, random) {
+function paidLater(createdAt, now, random) {
+	return new Date(Math.min(now.getTime(), createdAt.getTime() + random() * 36 * 60 * MINUTE_MS)).toISOString();
+}
+
+function demoPayments(total, createdAt, unpaidChance, now, random) {
+	const cash = amount => ({ method: METHOD.CASH, amount, at: createdAt.toISOString() });
+	const paybox = amount => ({ method: METHOD.PAYBOX, amount, at: paidLater(createdAt, now, random) });
+	const part = Math.max(1, Math.min(total - 1, 10 * Math.ceil(random() * Math.floor(total / 10))));
 	if (random() < unpaidChance) {
-		return { payment: PAYMENT.UNPAID, paidAt: null };
+		return random() < PARTIAL_CHANCE && total > 1 ? [cash(part)] : [];
 	}
-	if (random() >= PAYBOX_SHARE) {
-		return { payment: PAYMENT.CASH, paidAt: createdAt.toISOString() };
+	const roll = random();
+	if (roll < SPLIT_SHARE && total > 1) {
+		return [cash(part), paybox(total - part)];
 	}
-	const later = new Date(Math.min(now.getTime(), createdAt.getTime() + random() * 36 * 60 * MINUTE_MS));
-	return { payment: PAYMENT.PAYBOX, paidAt: later.toISOString() };
+	return roll < SPLIT_SHARE + PAYBOX_SHARE ? [paybox(total)] : [cash(total)];
 }
 
 function demoOrder(menu, createdAt, eveningDate, unpaidChance, now, random) {
+	const lines = demoLines(menu, random);
 	return {
 		id: `demo-${eveningDate}-${createdAt.getTime()}-${Math.floor(random() * 1e9)}`,
 		eveningDate,
 		createdAt: createdAt.toISOString(),
 		customerName: `${pick(FIRST_NAMES, random)} ${pick(LAST_NAMES, random)}`,
 		note: random() < 0.15 ? pick(NOTES, random) : '',
-		lines: demoLines(menu, random),
-		...demoPayment(createdAt, unpaidChance, now, random),
+		lines,
+		payments: demoPayments(orderTotal(lines), createdAt, unpaidChance, now, random),
 	};
 }
 

@@ -1,7 +1,8 @@
 import { DEFAULT_MENU } from './logic/model.js';
+import { upgradeOrder } from './logic/payments.js';
 
 const DB_NAME = 'falafel-orders';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 function promisify(request) {
 	return new Promise((resolve, reject) => {
@@ -18,11 +19,33 @@ function done(tx) {
 	});
 }
 
-function upgrade(db) {
+function createStores(db) {
 	db.createObjectStore('menu', { keyPath: 'id' });
 	const orders = db.createObjectStore('orders', { keyPath: 'id' });
 	orders.createIndex('eveningDate', 'eveningDate');
 	db.createObjectStore('meta', { keyPath: 'key' });
+}
+
+function upgradePayments(tx) {
+	const cursorRequest = tx.objectStore('orders').openCursor();
+	cursorRequest.onsuccess = () => {
+		const cursor = cursorRequest.result;
+		if (!cursor) {
+			return;
+		}
+		cursor.update(upgradeOrder(cursor.value));
+		cursor.continue();
+	};
+}
+
+function upgrade(request, oldVersion) {
+	if (oldVersion < 1) {
+		createStores(request.result);
+		return;
+	}
+	if (oldVersion < 2) {
+		upgradePayments(request.transaction);
+	}
 }
 
 class Store {
@@ -115,7 +138,7 @@ class Store {
 
 export async function openStore() {
 	const request = indexedDB.open(DB_NAME, DB_VERSION);
-	request.onupgradeneeded = () => upgrade(request.result);
+	request.onupgradeneeded = event => upgrade(request, event.oldVersion);
 	const store = new Store(await promisify(request));
 	await store.seedMenuIfEmpty();
 	return store;

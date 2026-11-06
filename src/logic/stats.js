@@ -1,4 +1,5 @@
-import { PAYMENT, orderTotal } from './model.js';
+import { orderTotal } from './model.js';
+import { METHOD, paidBy, paidAmount, remainingAmount } from './payments.js';
 
 const SLOT_MINUTES = 30;
 
@@ -21,6 +22,10 @@ function sumWhere(orders, predicate) {
 	return orders.filter(predicate).reduce((sum, o) => sum + orderTotal(o.lines), 0);
 }
 
+function sumOf(orders, amount) {
+	return orders.reduce((sum, o) => sum + amount(o), 0);
+}
+
 export function eveningList(orders) {
 	return [...groupByDate(orders).entries()]
 		.sort(([a], [b]) => byDateDesc(a, b))
@@ -28,7 +33,7 @@ export function eveningList(orders) {
 			date,
 			count: list.length,
 			total: sumWhere(list, () => true),
-			unpaid: sumWhere(list, o => o.payment === PAYMENT.UNPAID),
+			unpaid: sumOf(list, remainingAmount),
 		}));
 }
 
@@ -80,19 +85,20 @@ export function eveningSummary(orders) {
 		orderCount: orders.length,
 		total,
 		average: orders.length === 0 ? 0 : Math.round(total / orders.length),
-		paidPaybox: sumWhere(orders, o => o.payment === PAYMENT.PAYBOX),
-		paidCash: sumWhere(orders, o => o.payment === PAYMENT.CASH),
-		unpaid: sumWhere(orders, o => o.payment === PAYMENT.UNPAID),
+		paidPaybox: sumOf(orders, o => paidBy(o, METHOD.PAYBOX)),
+		paidCash: sumOf(orders, o => paidBy(o, METHOD.CASH)),
+		paidTotal: sumOf(orders, paidAmount),
+		unpaid: sumOf(orders, remainingAmount),
 		items: itemTotals(orders),
 		byHalfHour: halfHourCounts(orders),
 	};
 }
 
 export function unpaidByEvening(orders) {
-	const unpaid = orders.filter(o => o.payment === PAYMENT.UNPAID);
+	const unpaid = orders.filter(o => remainingAmount(o) > 0);
 	return [...groupByDate(unpaid).entries()]
 		.sort(([a], [b]) => byDateDesc(a, b))
-		.map(([date, list]) => ({ date, orders: [...list].sort(byCreatedAt), total: sumWhere(list, () => true) }));
+		.map(([date, list]) => ({ date, orders: [...list].sort(byCreatedAt), total: sumOf(list, remainingAmount) }));
 }
 
 export function weekdayOf(date) {

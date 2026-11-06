@@ -1,53 +1,19 @@
-import { addItem, changeQty, orderTotal, validateOrder, createOrder, PAYMENT } from '../logic/model.js';
+import { addItem, changeQty, orderTotal, validateOrder, createOrder } from '../logic/model.js';
+import { validatePayments } from '../logic/payments.js';
 import { h, formatMoney, confirmPanel, showToast, SAVE_FAILED } from '../dom.js';
-
-const DRAFT_KEY = 'draft';
-
-const PAYMENT_CHOICES = [
-	[PAYMENT.UNPAID, 'לא שולם'],
-	[PAYMENT.PAYBOX, 'פייבוקס'],
-	[PAYMENT.CASH, 'מזומן'],
-];
-
-function emptyDraft() {
-	return { customerName: '', note: '', lines: [], payment: PAYMENT.UNPAID };
-}
-
-function loadDraft() {
-	try {
-		const saved = JSON.parse(localStorage.getItem(DRAFT_KEY));
-		if (!saved || !Array.isArray(saved.lines)) {
-			return emptyDraft();
-		}
-		const known = PAYMENT_CHOICES.some(([value]) => value === saved.payment);
-		return { ...saved, payment: known ? saved.payment : PAYMENT.UNPAID };
-	} catch {
-		return emptyDraft();
-	}
-}
-
-function storeDraft(draft) {
-	try {
-		localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-	} catch {
-		// Storage can be unavailable; the draft is only a convenience.
-	}
-}
-
-function clearDraft() {
-	try {
-		localStorage.removeItem(DRAFT_KEY);
-	} catch {
-		// See storeDraft.
-	}
-}
+import { emptyDraft, loadDraft, storeDraft, clearDraft } from './draft.js';
+import { paymentChoice, draftPayments } from './paymentChoice.js';
+import { customerPicker } from './customerPicker.js';
 
 function lineRow(line, onChange) {
 	return h('div', { class: 'order-line' },
-		h('span', { class: 'grow' }, `${line.qty} × ${line.name}`),
+		h('span', { class: 'qty-badge' }, String(line.qty)),
+		h('span', { class: 'grow line-name' }, line.name),
+		h('div', { class: 'stepper' },
+			h('button', { class: 'step-button', 'aria-label': 'הוסף', onclick: () => onChange(line.itemId, 1) }, '+'),
+			h('button', { class: 'step-button minus', 'aria-label': 'הפחת', onclick: () => onChange(line.itemId, -1) }, '−'),
+		),
 		h('span', { class: 'line-total' }, formatMoney(line.price * line.qty)),
-		h('button', { class: 'small', 'aria-label': 'הפחת', onclick: () => onChange(line.itemId, -1) }, '−'),
-		h('button', { class: 'small', 'aria-label': 'הוסף', onclick: () => onChange(line.itemId, 1) }, '+'),
 	);
 }
 
@@ -87,10 +53,10 @@ function buildForm(menu, state, onChange) {
 	return { nameInput, noteInput, grid, linesBox, totalBox, errorsBox, refresh };
 }
 
-function layout(title, form, actions) {
+function layout(title, form, nameExtras, actions) {
 	return h('section', { class: 'order-screen' },
 		h('h1', {}, title),
-		h('div', { class: 'card' }, form.nameInput),
+		h('div', { class: 'card' }, form.nameInput, nameExtras),
 		form.grid,
 		h('div', { class: 'card' }, form.linesBox, form.totalBox, form.noteInput),
 		form.errorsBox,
@@ -98,60 +64,67 @@ function layout(title, form, actions) {
 	);
 }
 
-function paymentChoice(state, onChange) {
-	const buttons = PAYMENT_CHOICES.map(([value, label]) => h('button', {
-		class: `choice choice-${value}`,
-		onclick: () => {
-			state.payment = value;
-			refresh();
-			onChange();
-		},
-	}, label));
-	function refresh() {
-		buttons.forEach((button, i) => button.setAttribute('aria-pressed', String(PAYMENT_CHOICES[i][0] === state.payment)));
-	}
-	refresh();
-	return { element: h('div', { class: 'payment-choice', role: 'group', 'aria-label': 'תשלום' }, buttons), refresh };
-}
-
-function showErrors(form, draft) {
-	const errors = validateOrder(draft);
+function showErrors(form, errors) {
 	form.errorsBox.replaceChildren(...errors.map(message => h('div', {}, message)));
 	return errors.length === 0;
 }
 
-function renderNew(store, menu) {
-	const state = loadDraft();
-	const form = buildForm(menu, state, () => storeDraft(state));
-	const payment = paymentChoice(state, () => storeDraft(state));
-	const saveButton = h('button', { class: 'primary save-button' }, 'שמור');
+function newOrderErrors(state) {
+	const total = orderTotal(state.lines);
+	return [...validateOrder(state), ...validatePayments(draftPayments(state, total), total)];
+}
 
-	async function save() {
-		if (saveButton.disabled || !showErrors(form, state)) {
-			return;
-		}
-		saveButton.disabled = true;
-		try {
-			await store.saveOrder(createOrder(state, new Date(), () => crypto.randomUUID()));
-			Object.assign(state, emptyDraft());
-			clearDraft();
-			form.nameInput.value = '';
-			form.noteInput.value = '';
-			form.refresh();
-			payment.refresh();
-			showToast('ההזמנה נשמרה');
-		} catch (error) {
-			console.error(error);
-			form.errorsBox.replaceChildren(h('div', {}, SAVE_FAILED));
-		} finally {
-			saveButton.disabled = false;
-			form.nameInput.focus();
-		}
-	}
-	saveButton.addEventListener('click', save);
-	const view = layout('הזמנה חדשה', form, h('div', {}, payment.element, saveButton));
-	setTimeout(() => form.nameInput.focus(), 0);
+function resetForm(state, parts) {
+	Object.assign(state, emptyDraft());
+	clearDraft();
+	parts.form.nameInput.value = '';
+	parts.form.noteInput.value = '';
+	parts.form.refresh();
+	parts.payment.refresh();
+	parts.picker.update('');
+}
+
+function renderNew(store, menu, orders) {
+	const state = loadDraft();
+	const parts = {};
+	const changed = () => {
+		storeDraft(state);
+		parts.payment?.updateRemaining();
+	};
+	parts.form = buildForm(menu, state, changed);
+	parts.payment = paymentChoice(state, () => orderTotal(state.lines), changed);
+	parts.picker = customerPicker(orders, menu, {
+		onPick: name => { state.customerName = name; parts.form.nameInput.value = name; changed(); },
+		onRepeat: lines => { state.lines = lines; parts.form.refresh(); changed(); },
+	});
+	parts.form.nameInput.addEventListener('input', () => parts.picker.update(parts.form.nameInput.value));
+	parts.picker.update(state.customerName);
+	const saveButton = h('button', { class: 'primary save-button' }, 'שמור');
+	saveButton.addEventListener('click', () => saveNew(store, state, parts, saveButton, orders));
+	const view = layout('הזמנה חדשה', parts.form, parts.picker.element, h('div', {}, parts.payment.element, saveButton));
+	setTimeout(() => parts.form.nameInput.focus(), 0);
 	return view;
+}
+
+async function saveNew(store, state, parts, saveButton, orders) {
+	if (saveButton.disabled || !showErrors(parts.form, newOrderErrors(state))) {
+		return;
+	}
+	saveButton.disabled = true;
+	try {
+		const total = orderTotal(state.lines);
+		const order = createOrder({ ...state, payments: draftPayments(state, total) }, new Date(), () => crypto.randomUUID());
+		await store.saveOrder(order);
+		orders.push(order);
+		resetForm(state, parts);
+		showToast('ההזמנה נשמרה');
+	} catch (error) {
+		console.error(error);
+		showErrors(parts.form, [SAVE_FAILED]);
+	} finally {
+		saveButton.disabled = false;
+		parts.form.nameInput.focus();
+	}
 }
 
 function renderEdit(store, menu, order) {
@@ -163,7 +136,7 @@ function renderEdit(store, menu, order) {
 	const actions = h('div', { class: 'row' }, saveButton, deleteButton);
 
 	saveButton.addEventListener('click', async () => {
-		if (saveButton.disabled || !showErrors(form, state)) {
+		if (saveButton.disabled || !showErrors(form, validateOrder(state))) {
 			return;
 		}
 		saveButton.disabled = true;
@@ -172,7 +145,7 @@ function renderEdit(store, menu, order) {
 		} catch (error) {
 			console.error(error);
 			saveButton.disabled = false;
-			form.errorsBox.replaceChildren(h('div', {}, SAVE_FAILED));
+			showErrors(form, [SAVE_FAILED]);
 			return;
 		}
 		back();
@@ -183,13 +156,13 @@ function renderEdit(store, menu, order) {
 			back();
 		}));
 	});
-	return layout(`עריכת הזמנה – ${order.customerName}`, form, actions);
+	return layout(`עריכת הזמנה – ${order.customerName}`, form, null, actions);
 }
 
 export async function render(store, params) {
 	const menu = (await store.getMenu()).filter(item => item.active);
 	if (!params.id) {
-		return renderNew(store, menu);
+		return renderNew(store, menu, await store.getOrders());
 	}
 	const order = await store.getOrder(params.id);
 	if (!order) {

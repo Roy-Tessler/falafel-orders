@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { generateDemoOrders, seededRandom } from '../src/logic/demo.js';
 import { validateOrder, eveningKey, orderTotal } from '../src/logic/model.js';
+import { paymentStatus, paidBy, validatePayments } from '../src/logic/payments.js';
 import { weekdayOf } from '../src/logic/stats.js';
 
 const MENU = [
@@ -20,13 +21,13 @@ test('seededRandom is deterministic', () => {
 	assert.deepEqual([a(), a(), a()], [b(), b(), b()]);
 });
 
-test('demo covers 8 past Thursday and Saturday evenings plus today', () => {
+test('demo covers 8 past Monday and Wednesday evenings plus today', () => {
 	const orders = generateDemoOrders(MENU, NOW, seededRandom(1));
 	const dates = [...new Set(orders.map(o => o.eveningDate))].sort();
 	assert.equal(dates.length, 9);
 	assert.equal(dates.at(-1), eveningKey(NOW));
 	for (const date of dates.slice(0, -1)) {
-		assert.ok([4, 6].includes(weekdayOf(date)), date);
+		assert.ok([1, 3].includes(weekdayOf(date)), date);
 	}
 });
 
@@ -51,11 +52,13 @@ test('demo has busy evenings and realistic payments', () => {
 	const older = orders.filter(o => o.eveningDate !== today);
 	const perEvening = older.length / 8;
 	assert.ok(perEvening >= 15 && perEvening <= 35, String(perEvening));
-	const recentUnpaid = orders.filter(o => o.eveningDate === today && o.payment === 'unpaid').length;
+	const recentUnpaid = orders.filter(o => o.eveningDate === today && paymentStatus(o) !== 'paid').length;
 	assert.ok(recentUnpaid > 0);
-	assert.ok(orders.some(o => o.payment === 'paybox') && orders.some(o => o.payment === 'cash'));
-	const paidOld = older.filter(o => o.payment !== 'unpaid').length / older.length;
+	assert.ok(orders.some(o => paidBy(o, 'paybox') > 0) && orders.some(o => paidBy(o, 'cash') > 0));
+	assert.ok(orders.some(o => paymentStatus(o) === 'partial'));
+	assert.ok(orders.some(o => paidBy(o, 'paybox') > 0 && paidBy(o, 'cash') > 0));
+	const paidOld = older.filter(o => paymentStatus(o) === 'paid').length / older.length;
 	assert.ok(paidOld > 0.8, String(paidOld));
-	assert.ok(orders.every(o => (o.payment === 'unpaid') === (o.paidAt === null)));
+	assert.ok(orders.every(o => validatePayments(o.payments, orderTotal(o.lines)).length === 0));
 	assert.ok(orders.every(o => orderTotal(o.lines) > 0));
 });

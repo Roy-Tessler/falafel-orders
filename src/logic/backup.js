@@ -1,13 +1,15 @@
-import { PAYMENT, orderTotal, isValidImage } from './model.js';
+import { orderTotal, isValidImage } from './model.js';
+import { METHOD, isMethod, remainingAmount, upgradeOrder } from './payments.js';
 
 const APP_ID = 'falafel-orders';
-const BACKUP_VERSION = 1;
+const BACKUP_VERSION = 2;
+const SUPPORTED_VERSIONS = [1, 2];
 const INVALID_MESSAGE = 'הקובץ אינו גיבוי תקין';
 const REMINDER_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-const PAYMENT_LABELS = { [PAYMENT.UNPAID]: 'לא שולם', [PAYMENT.PAYBOX]: 'פייבוקס', [PAYMENT.CASH]: 'מזומן' };
-const CSV_HEADER = ['תאריך', 'שעה', 'שם', 'פריטים', 'סכום', 'תשלום', 'הערה'];
+const METHOD_LABELS = { [METHOD.PAYBOX]: 'פייבוקס', [METHOD.CASH]: 'מזומן' };
+const CSV_HEADER = ['תאריך', 'שעה', 'שם', 'פריטים', 'סכום', 'תשלום', 'נשאר לשלם', 'הערה'];
 
 export class BackupError extends Error {
 	constructor(message = INVALID_MESSAGE) {
@@ -52,6 +54,13 @@ function isValidLine(line) {
 		&& Number.isInteger(line.qty) && line.qty > 0;
 }
 
+function isValidPayment(payment) {
+	return isObject(payment)
+		&& isMethod(payment.method)
+		&& Number.isInteger(payment.amount) && payment.amount > 0
+		&& typeof payment.at === 'string';
+}
+
 function isValidOrder(order) {
 	return isObject(order)
 		&& typeof order.id === 'string'
@@ -62,7 +71,8 @@ function isValidOrder(order) {
 		&& typeof order.customerName === 'string'
 		&& Array.isArray(order.lines)
 		&& order.lines.every(isValidLine)
-		&& Object.values(PAYMENT).includes(order.payment);
+		&& Array.isArray(order.payments)
+		&& order.payments.every(isValidPayment);
 }
 
 export function parseBackup(text) {
@@ -72,17 +82,20 @@ export function parseBackup(text) {
 	} catch {
 		throw new BackupError();
 	}
-	const valid = isObject(data)
+	const shapeOk = isObject(data)
 		&& data.app === APP_ID
-		&& data.version === BACKUP_VERSION
+		&& SUPPORTED_VERSIONS.includes(data.version)
 		&& Array.isArray(data.menu)
 		&& Array.isArray(data.orders)
-		&& data.menu.every(isValidMenuItem)
-		&& data.orders.every(isValidOrder);
-	if (!valid) {
+		&& data.orders.every(isObject);
+	if (!shapeOk) {
 		throw new BackupError();
 	}
-	return { menu: data.menu, orders: data.orders };
+	const orders = data.version === 1 ? data.orders.map(upgradeOrder) : data.orders;
+	if (!data.menu.every(isValidMenuItem) || !orders.every(isValidOrder)) {
+		throw new BackupError();
+	}
+	return { menu: data.menu, orders };
 }
 
 function csvCell(value) {
@@ -100,13 +113,15 @@ function localTime(iso) {
 
 function orderRow(order) {
 	const items = order.lines.map(l => `${l.qty}× ${l.name}`).join('; ');
+	const paid = order.payments.map(p => `${METHOD_LABELS[p.method]} ₪${p.amount}`).join(' + ');
 	return [
 		order.eveningDate,
 		localTime(order.createdAt),
 		order.customerName,
 		items,
 		orderTotal(order.lines),
-		PAYMENT_LABELS[order.payment],
+		paid || 'לא שולם',
+		remainingAmount(order),
 		order.note || '',
 	];
 }

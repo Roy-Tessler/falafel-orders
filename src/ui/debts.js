@@ -1,4 +1,4 @@
-import { PAYMENT, orderTotal } from '../logic/model.js';
+import { remainingAmount } from '../logic/payments.js';
 import { h, formatMoney, formatDate } from '../dom.js';
 import { paymentRow } from './payments.js';
 
@@ -6,13 +6,13 @@ function groupsOf(orders) {
 	const dates = [...new Set(orders.map(o => o.eveningDate))].sort().reverse();
 	return dates.map(date => {
 		const list = orders.filter(o => o.eveningDate === date).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-		const unpaid = list.filter(o => o.payment === PAYMENT.UNPAID).reduce((sum, o) => sum + orderTotal(o.lines), 0);
+		const unpaid = list.reduce((sum, o) => sum + remainingAmount(o), 0);
 		return { date, orders: list, unpaid };
 	});
 }
 
 export async function render(store) {
-	const orders = (await store.getOrders()).filter(o => o.payment === PAYMENT.UNPAID);
+	const orders = (await store.getOrders()).filter(o => remainingAmount(o) > 0);
 	const view = h('section', {});
 
 	function refresh() {

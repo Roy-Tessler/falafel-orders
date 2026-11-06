@@ -304,11 +304,33 @@ th, td {
 
 .pay-row {
 	display: flex;
-	flex-wrap: wrap;
+	flex-direction: column;
+	gap: 8px;
+	padding: 10px 0;
+	border-bottom: 1px solid var(--border);
+}
+
+.pay-main {
+	display: flex;
 	align-items: center;
 	gap: 10px;
-	padding: 8px 0;
-	border-bottom: 1px solid var(--border);
+}
+
+.pay-actions {
+	justify-content: flex-end;
+}
+
+.pay-detail {
+	font-size: 0.85rem;
+	font-weight: 400;
+}
+
+.paid-amount {
+	color: var(--paid-cash);
+}
+
+.other-form .other-amount {
+	width: 140px;
 }
 
 .pay-name {
@@ -318,7 +340,7 @@ th, td {
 
 .pay-amount {
 	min-width: 70px;
-	font-weight: 600;
+	text-align: left;
 }
 
 .pay-paybox {
@@ -507,4 +529,118 @@ select {
 
 .font-xlarge {
 	font-size: 26px;
+}
+
+.order-line {
+	gap: 12px;
+	padding: 10px 0;
+}
+
+.qty-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 48px;
+	height: 48px;
+	padding: 0 8px;
+	border-radius: 999px;
+	background: var(--text);
+	color: #fff;
+	font-size: 1.4rem;
+	font-weight: 800;
+}
+
+.line-name {
+	font-size: 1.15rem;
+	font-weight: 600;
+}
+
+.line-total {
+	font-weight: 700;
+	font-size: 1.1rem;
+}
+
+.stepper {
+	display: flex;
+	gap: 6px;
+}
+
+.step-button {
+	min-width: 56px;
+	font-size: 1.6rem;
+	font-weight: 800;
+	background: var(--primary);
+	border-color: var(--primary);
+	color: #fff;
+}
+
+.step-button.minus {
+	background: #fff;
+	color: var(--danger);
+	border: 2px solid var(--danger);
+}
+
+.payment-choice.four {
+	grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 700px) {
+	.payment-choice.four {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+.choice-split[aria-pressed="true"] {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: var(--text);
+}
+
+.split-box {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+	margin-bottom: 12px;
+}
+
+.split-box[hidden] {
+	display: none;
+}
+
+.split-field {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.split-field input {
+	width: 120px;
+}
+
+.split-remaining {
+	font-weight: 700;
+}
+
+.customer-picker .chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.customer-chip {
+	border-radius: 999px;
+	background: #fff3df;
+	border-color: var(--accent);
+}
+
+.repeat-button {
+	width: 100%;
+	margin-top: 10px;
+	justify-content: flex-start;
+	text-align: right;
+	background: #e9f5ea;
+	border-color: var(--primary);
+	color: var(--text);
 }

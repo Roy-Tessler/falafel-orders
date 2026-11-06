@@ -26,6 +26,10 @@ export function h(tag, props = {}, ...children) {
 	return el;
 }
 
+export function setChildren(el, ...children) {
+	el.replaceChildren(...children.flat().filter(child => child !== null && child !== undefined && child !== false));
+}
+
 export function formatMoney(amount) {
 	return `₪${amount.toLocaleString('en-US')}`;
 }

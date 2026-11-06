@@ -1,4 +1,4 @@
-export const PAYMENT = Object.freeze({ UNPAID: 'unpaid', PAYBOX: 'paybox', CASH: 'cash' });
+import { isMethod } from './payments.js';
 
 export const DEFAULT_MENU = Object.freeze([
 	{ name: 'מנה פלאפל', price: 25, image: 'images/falafel.svg' },
@@ -16,7 +16,6 @@ export function isValidImage(image) {
 }
 
 const PRICE_ERROR = 'המחיר חייב להיות מספר שלם, 0 או יותר';
-const PAYMENT_VALUES = Object.values(PAYMENT);
 
 function pad(n) {
 	return String(n).padStart(2, '0');
@@ -54,14 +53,17 @@ export function validateOrder(draft) {
 	return errors;
 }
 
-function assertPayment(payment) {
-	if (!PAYMENT_VALUES.includes(payment)) {
-		throw new RangeError(`Unknown payment state: ${payment}`);
+function orderPayments(payments, now) {
+	for (const p of payments) {
+		if (!isMethod(p.method)) {
+			throw new RangeError(`Unknown payment method: ${p.method}`);
+		}
 	}
+	return payments.filter(p => p.amount > 0).map(p => ({ method: p.method, amount: p.amount, at: now.toISOString() }));
 }
 
 export function createOrder(draft, now, newId) {
-	assertPayment(draft.payment);
+	const payments = orderPayments(draft.payments || [], now);
 	return {
 		id: newId(),
 		eveningDate: eveningKey(now),
@@ -69,14 +71,8 @@ export function createOrder(draft, now, newId) {
 		customerName: draft.customerName.trim(),
 		note: (draft.note || '').trim(),
 		lines: draft.lines.map(l => ({ itemId: l.itemId, name: l.name, price: l.price, qty: l.qty })),
-		payment: draft.payment,
-		paidAt: draft.payment === PAYMENT.UNPAID ? null : now.toISOString(),
+		payments,
 	};
-}
-
-export function setPayment(order, payment, now) {
-	assertPayment(payment);
-	return { ...order, payment, paidAt: payment === PAYMENT.UNPAID ? null : now.toISOString() };
 }
 
 export function validateMenuItem(item) {

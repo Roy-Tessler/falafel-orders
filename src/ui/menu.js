@@ -1,5 +1,5 @@
 import { validateMenuItem } from '../logic/model.js';
-import { h, confirmPanel, showToast, SAVE_FAILED } from '../dom.js';
+import { h, setChildren, confirmPanel, showToast, SAVE_FAILED } from '../dom.js';
 import { photoToDataUrl } from '../photo.js';
 
 function parsePrice(text) {
@@ -46,7 +46,7 @@ function imageControl(store, item) {
 		}
 	} });
 	function refresh() {
-		box.replaceChildren(
+		setChildren(box,
 			item.image ? h('img', { class: 'menu-thumb', src: item.image, alt: '' }) : h('div', { class: 'menu-thumb empty' }),
 			h('label', { class: 'button small' }, item.image ? 'החלף תמונה' : 'הוסף תמונה', input),
 			item.image ? h('button', { class: 'small', onclick: () => setImage(undefined) }, 'הסר תמונה') : null,
@@ -138,7 +138,7 @@ export async function render(store) {
 	function refresh() {
 		const active = menu.filter(i => i.active);
 		const removed = menu.filter(i => !i.active && i.name);
-		view.replaceChildren(
+		setChildren(view,
 			h('h1', {}, 'תפריט ומחירים'),
 			h('p', { class: 'muted' }, 'שינוי מחיר משפיע רק על הזמנות חדשות.'),
 			h('div', { class: 'card' }, active.map((item, index) => editableRow(store, item, {

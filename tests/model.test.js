@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-	PAYMENT, DEFAULT_MENU, eveningKey, addItem, changeQty, orderTotal,
-	validateOrder, createOrder, setPayment, validateMenuItem, isValidImage,
+	DEFAULT_MENU, eveningKey, addItem, changeQty, orderTotal,
+	validateOrder, createOrder, validateMenuItem, isValidImage,
 } from '../src/logic/model.js';
 
 test('DEFAULT_MENU has the real menu', () => {
@@ -13,7 +13,6 @@ test('DEFAULT_MENU has the real menu', () => {
 		{ name: 'נקניקייה בלחמניה', price: 15, image: 'images/hotdog.svg' },
 		{ name: 'כדור פלאפל', price: 2, image: 'images/ball.svg' },
 	]);
-	assert.deepEqual(PAYMENT, { UNPAID: 'unpaid', PAYBOX: 'paybox', CASH: 'cash' });
 });
 
 test('eveningKey uses local date, and 00:05 belongs to the new day', () => {
@@ -49,29 +48,22 @@ test('validateOrder needs a trimmed name and at least one line', () => {
 
 test('createOrder copies prices, trims the name, and sets the evening', () => {
 	const lines = [{ itemId: 'a', name: 'פלאפל בפיתה', price: 20, qty: 2 }];
-	const order = createOrder({ customerName: ' דנה כהן ', note: '', lines, payment: 'cash' },
-		new Date(2026, 10, 6, 20, 15), () => 'id1');
+	const now = new Date(2026, 10, 6, 20, 15);
+	const order = createOrder({ customerName: ' דנה כהן ', note: '', lines, payments: [{ method: 'cash', amount: 40 }] }, now, () => 'id1');
 	lines[0].price = 99;
 	assert.equal(order.lines[0].price, 20);
 	assert.equal(order.customerName, 'דנה כהן');
 	assert.equal(order.eveningDate, '2026-11-06');
 	assert.equal(order.id, 'id1');
-	assert.equal(order.payment, 'cash');
-	assert.ok(order.paidAt);
+	assert.deepEqual(order.payments, [{ method: 'cash', amount: 40, at: now.toISOString() }]);
+	assert.equal('payment' in order, false);
 });
 
-test('createOrder with unpaid has null paidAt', () => {
-	const o = createOrder({ customerName: 'x', note: '', lines: [{ itemId: 'a', name: 'x', price: 1, qty: 1 }], payment: 'unpaid' }, new Date(), () => 'i');
-	assert.equal(o.paidAt, null);
-});
-
-test('setPayment sets and clears paidAt and rejects unknown states', () => {
-	const now = new Date(2026, 10, 7, 9, 0);
-	const base = { payment: 'unpaid', paidAt: null };
-	assert.equal(setPayment(base, 'paybox', now).paidAt, now.toISOString());
-	assert.equal(setPayment(base, 'paybox', now).payment, 'paybox');
-	assert.equal(setPayment({ payment: 'paybox', paidAt: 'x' }, 'unpaid', now).paidAt, null);
-	assert.throws(() => setPayment(base, 'card', now), RangeError);
+test('createOrder drops zero payments and rejects bad ones', () => {
+	const lines = [{ itemId: 'a', name: 'x', price: 10, qty: 1 }];
+	const o = createOrder({ customerName: 'x', note: '', lines, payments: [{ method: 'cash', amount: 0 }] }, new Date(), () => 'i');
+	assert.deepEqual(o.payments, []);
+	assert.throws(() => createOrder({ customerName: 'x', note: '', lines, payments: [{ method: 'card', amount: 5 }] }, new Date(), () => 'i'), RangeError);
 });
 
 test('validateMenuItem rejects empty names and bad prices', () => {

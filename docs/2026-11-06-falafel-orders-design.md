@@ -2,7 +2,7 @@
 
 ## Intent
 
-A family runs a falafel stand two evenings a week in their home town. The owner (called "the operator" below) takes every order by hand. She asks for the customer's full name, writes the items, and adds up the total on paper. Most customers pay later through PayBox, usually within one or two days. Some customers pay cash at the stand when they order.
+A family runs a falafel stand, פלאפל בחצר, on Monday and Wednesday evenings in their home town. The owner (called "the operator" below) takes every order by hand. She asks for the customer's full name, writes the items, and adds up the total on paper. Most customers pay later through PayBox, usually within one or two days. Some customers pay cash at the stand when they order.
 
 The program replaces the paper. It must do three things:
 
@@ -39,18 +39,20 @@ A single web app that runs fully in the browser with no server. It works without
 - Each tap adds one unit. The order list shows quantity, line total, and minus and plus buttons.
 - The order total updates on every change and is large and easy to read.
 - An optional free-text note per order (for example "no tahini").
-- A payment choice with three options: unpaid (the default), PayBox, and cash. One "save" button stores the order with the chosen payment and the current time, clears the screen for the next customer, and resets the choice to unpaid.
-- An order has one payment state: unpaid, paid by PayBox, or paid in cash.
+- A payment choice with four options: unpaid (the default), PayBox, cash, and split or partial. The split option shows a PayBox amount and a cash amount, and the remaining amount. The payments cannot exceed the order total. One "save" button stores the order with its payments and the current time, clears the screen for the next customer, and resets the choice to unpaid.
+- An order has a list of payments. Each payment has a method (PayBox or cash), a whole-shekel amount, and a time. The order is unpaid, partly paid, or paid, calculated from the amounts.
+- While the operator types a name, past customer names appear as buttons, newest first. When the name matches a past customer, a "same as last time" button refills the items of that customer's last order at today's prices. Items removed from the menu are skipped.
+- Each order line shows the quantity in a large badge, with large plus and minus buttons.
 - The operator can open a saved order and edit or delete it. Delete asks for confirmation.
 
 Mockup reference: `.superpowers/brainstorm/313-1793967489/content/screens.html`, screen 1. Prices in the mockup are placeholders.
 
 ### 3. Evening payments
 
-- Lists every order of one evening: name, amount, and payment state. Each unpaid order has two buttons: "PayBox" and "cash".
+- Lists every order of one evening, newest first: name, amount, and payment state. Paid amounts are green. A partly paid order shows the paid amount, its split, and the remaining amount. Each order with a remaining amount has "PayBox" and "cash" buttons that pay the rest, and "another amount" for a partial payment.
 - Shows totals: paid by PayBox, paid in cash, and unpaid.
 - Search by name. Filter to "unpaid only".
-- The operator works next to the PayBox app: she finds a transfer by name and amount and taps "PayBox". If she made a mistake, she can set the order back to unpaid.
+- The operator works next to the PayBox app: she finds a transfer by name and amount and taps "PayBox". If she made a mistake, she can clear the payments of that order.
 - An evening stays open for payment marking forever. There is no "close" step that locks it.
 
 Mockup reference: same file, screen 2.
