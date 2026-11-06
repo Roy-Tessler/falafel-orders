@@ -169,6 +169,10 @@ input, textarea, select {
 	z-index: 20;
 }
 
+.toast-error {
+	background: var(--danger);
+}
+
 .confirm {
 	border: 2px solid var(--danger);
 }

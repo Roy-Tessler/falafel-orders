@@ -86,11 +86,18 @@ class Store {
 		const tx = this.m_db.transaction(['menu', 'orders'], 'readwrite');
 		const menu = tx.objectStore('menu');
 		const orders = tx.objectStore('orders');
-		menu.clear();
-		orders.clear();
-		data.menu.forEach(item => menu.put(item));
-		data.orders.forEach(order => orders.put(order));
-		return done(tx);
+		const finished = done(tx);
+		try {
+			menu.clear();
+			orders.clear();
+			data.menu.forEach(item => menu.put(item));
+			data.orders.forEach(order => orders.put(order));
+		} catch (error) {
+			tx.abort();
+			await finished.catch(() => {});
+			throw error;
+		}
+		return finished;
 	}
 
 	async seedMenuIfEmpty() {

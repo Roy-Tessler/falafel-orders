@@ -26,13 +26,41 @@ export function toBackupJson(data, now) {
 	});
 }
 
+function isObject(value) {
+	return value !== null && typeof value === 'object';
+}
+
+function isWholeNumber(value) {
+	return Number.isInteger(value) && value >= 0;
+}
+
+function isValidMenuItem(item) {
+	return isObject(item)
+		&& typeof item.id === 'string'
+		&& typeof item.name === 'string'
+		&& isWholeNumber(item.price)
+		&& Number.isFinite(item.position)
+		&& typeof item.active === 'boolean';
+}
+
+function isValidLine(line) {
+	return isObject(line)
+		&& typeof line.itemId === 'string'
+		&& typeof line.name === 'string'
+		&& isWholeNumber(line.price)
+		&& Number.isInteger(line.qty) && line.qty > 0;
+}
+
 function isValidOrder(order) {
-	return order !== null
-		&& typeof order === 'object'
+	return isObject(order)
 		&& typeof order.id === 'string'
 		&& typeof order.eveningDate === 'string'
 		&& DATE_PATTERN.test(order.eveningDate)
+		&& typeof order.createdAt === 'string'
+		&& !Number.isNaN(Date.parse(order.createdAt))
+		&& typeof order.customerName === 'string'
 		&& Array.isArray(order.lines)
+		&& order.lines.every(isValidLine)
 		&& Object.values(PAYMENT).includes(order.payment);
 }
 
@@ -43,12 +71,12 @@ export function parseBackup(text) {
 	} catch {
 		throw new BackupError();
 	}
-	const valid = data !== null
-		&& typeof data === 'object'
+	const valid = isObject(data)
 		&& data.app === APP_ID
 		&& data.version === BACKUP_VERSION
 		&& Array.isArray(data.menu)
 		&& Array.isArray(data.orders)
+		&& data.menu.every(isValidMenuItem)
 		&& data.orders.every(isValidOrder);
 	if (!valid) {
 		throw new BackupError();

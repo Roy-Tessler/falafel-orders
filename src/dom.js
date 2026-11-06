@@ -52,8 +52,10 @@ export function confirmPanel(message, yesLabel, onYes, onNo) {
 	return panel;
 }
 
-export function showToast(message) {
-	const toast = h('div', { class: 'toast', role: 'status' }, message);
+export const SAVE_FAILED = 'השמירה נכשלה, נסו שוב';
+
+export function showToast(message, isError = false) {
+	const toast = h('div', { class: isError ? 'toast toast-error' : 'toast', role: 'status' }, message);
 	document.body.append(toast);
 	setTimeout(() => toast.remove(), 2000);
 }

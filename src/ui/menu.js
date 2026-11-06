@@ -1,5 +1,5 @@
 import { validateMenuItem } from '../logic/model.js';
-import { h, confirmPanel, showToast } from '../dom.js';
+import { h, confirmPanel, showToast, SAVE_FAILED } from '../dom.js';
 
 function parsePrice(text) {
 	const trimmed = text.trim();
@@ -18,7 +18,13 @@ function editableRow(store, item, actions) {
 		if (errors.length > 0 || (candidate.name === item.name && candidate.price === item.price)) {
 			return;
 		}
-		await store.saveMenuItem(candidate);
+		try {
+			await store.saveMenuItem(candidate);
+		} catch (error) {
+			console.error(error);
+			errorBox.replaceChildren(h('div', {}, SAVE_FAILED));
+			return;
+		}
 		Object.assign(item, candidate);
 		showToast('נשמר');
 	}

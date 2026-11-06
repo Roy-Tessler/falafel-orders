@@ -58,3 +58,16 @@ test('reminder after 7 days only when orders exist', () => {
 	assert.equal(needsBackupReminder('2026-11-08T12:00:00Z', true, now), false);
 	assert.equal(needsBackupReminder('2026-11-07T12:00:00Z', true, now), true);
 });
+
+const BAD_CONTENT = [
+	['menu item without id', { menu: [{ name: 'x', price: 1, position: 0, active: true }], orders: [] }],
+	['menu item with fractional price', { menu: [{ id: 'm', name: 'x', price: 1.5, position: 0, active: true }], orders: [] }],
+	['order without customerName', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', lines: [], payment: 'bit' }] }],
+	['order line without qty', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', customerName: 'x', lines: [{ itemId: 'a', name: 'x', price: 1 }], payment: 'bit' }] }],
+];
+for (const [label, content] of BAD_CONTENT) {
+	test(`parseBackup rejects ${label}`, () => {
+		const text = JSON.stringify({ app: 'falafel-orders', version: 1, ...content });
+		assert.throws(() => parseBackup(text), err => err instanceof BackupError);
+	});
+}

@@ -1,13 +1,30 @@
 import { setPayment, orderTotal, PAYMENT } from '../logic/model.js';
 import { eveningSummary } from '../logic/stats.js';
-import { h, formatMoney, formatDate, formatTime } from '../dom.js';
+import { h, formatMoney, formatDate, formatTime, showToast, SAVE_FAILED } from '../dom.js';
 
+const TAP_GUARD_MS = 600;
 const PAID_LABELS = { [PAYMENT.BIT]: 'שולם בביט', [PAYMENT.CASH]: 'שולם במזומן' };
+
+let s_busy = false;
+let s_lastChangeAt = -Infinity;
 
 export function paymentRow(store, order, onChange) {
 	async function update(payment) {
+		if (s_busy || performance.now() - s_lastChangeAt < TAP_GUARD_MS) {
+			return;
+		}
+		s_busy = true;
 		const updated = setPayment(order, payment, new Date());
-		await store.saveOrder(updated);
+		try {
+			await store.saveOrder(updated);
+		} catch (error) {
+			console.error(error);
+			showToast(SAVE_FAILED, true);
+			return;
+		} finally {
+			s_busy = false;
+		}
+		s_lastChangeAt = performance.now();
 		onChange(updated);
 	}
 	const status = order.payment === PAYMENT.UNPAID
@@ -37,25 +54,27 @@ function totalsBox(orders) {
 export async function render(store, params) {
 	const orders = await store.getOrdersByDate(params.date);
 	const filter = { text: '', unpaidOnly: false };
+	const keepVisible = new Set();
 	const totals = h('div', {});
 	const list = h('div', { class: 'card' });
 
 	function refresh() {
 		totals.replaceChildren(totalsBox(orders));
 		const text = filter.text.trim().toLowerCase();
-		const visible = orders.filter(o => (!filter.unpaidOnly || o.payment === PAYMENT.UNPAID)
+		const visible = orders.filter(o => (!filter.unpaidOnly || o.payment === PAYMENT.UNPAID || keepVisible.has(o.id))
 			&& o.customerName.toLowerCase().includes(text));
 		list.replaceChildren(...visible.map(order => paymentRow(store, order, updated => {
 			orders[orders.findIndex(o => o.id === updated.id)] = updated;
+			keepVisible.add(updated.id);
 			refresh();
 		})));
 		if (visible.length === 0) {
 			list.append(h('p', { class: 'muted' }, 'אין הזמנות להצגה'));
 		}
 	}
-	const search = h('input', { type: 'search', placeholder: 'חיפוש לפי שם', oninput: e => { filter.text = e.target.value; refresh(); } });
+	const search = h('input', { type: 'search', placeholder: 'חיפוש לפי שם', oninput: e => { filter.text = e.target.value; keepVisible.clear(); refresh(); } });
 	const toggle = h('label', { class: 'toggle' },
-		h('input', { type: 'checkbox', onchange: e => { filter.unpaidOnly = e.target.checked; refresh(); } }),
+		h('input', { type: 'checkbox', onchange: e => { filter.unpaidOnly = e.target.checked; keepVisible.clear(); refresh(); } }),
 		'רק מי שלא שילם');
 	refresh();
 	return h('section', {},

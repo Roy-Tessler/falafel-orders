@@ -24,10 +24,10 @@ async function exportFile(store, kind) {
 	const orders = await store.getOrders();
 	if (kind === 'json') {
 		download(`falafel-backup-${eveningKey(now)}.json`, toBackupJson({ menu: await store.getMenu(), orders }, now), 'application/json');
+		await store.setMeta('lastExportAt', now.toISOString());
 	} else {
 		download(`falafel-orders-${eveningKey(now)}.csv`, ordersToCsv(orders), 'text/csv;charset=utf-8');
 	}
-	await store.setMeta('lastExportAt', now.toISOString());
 }
 
 function restoreControl(store, messageBox, onDone) {
@@ -50,7 +50,13 @@ function restoreControl(store, messageBox, onDone) {
 		messageBox.replaceChildren(confirmPanel(
 			`השחזור יחליף את כל הנתונים במכשיר ב-${data.orders.length} הזמנות מהקובץ. להמשיך?`, 'כן',
 			async () => {
-				await store.replaceAll(data);
+				try {
+					await store.replaceAll(data);
+				} catch (error) {
+					console.error(error);
+					messageBox.replaceChildren(h('p', { class: 'error' }, 'השחזור נכשל. הנתונים הקודמים נשמרו.'));
+					return;
+				}
 				showToast('השחזור הושלם');
 				onDone();
 			}));

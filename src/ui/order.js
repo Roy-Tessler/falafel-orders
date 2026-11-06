@@ -1,5 +1,5 @@
 import { addItem, changeQty, orderTotal, validateOrder, createOrder, PAYMENT } from '../logic/model.js';
-import { h, formatMoney, confirmPanel, showToast } from '../dom.js';
+import { h, formatMoney, confirmPanel, showToast, SAVE_FAILED } from '../dom.js';
 
 const DRAFT_KEY = 'draft';
 
@@ -113,6 +113,9 @@ function renderNew(store, menu) {
 			form.noteInput.value = '';
 			form.refresh();
 			showToast('ההזמנה נשמרה');
+		} catch (error) {
+			console.error(error);
+			form.errorsBox.replaceChildren(h('div', {}, SAVE_FAILED));
 		} finally {
 			saveUnpaid.disabled = false;
 			saveCash.disabled = false;
@@ -139,7 +142,14 @@ function renderEdit(store, menu, order) {
 			return;
 		}
 		saveButton.disabled = true;
-		await store.saveOrder({ ...order, customerName: state.customerName.trim(), note: state.note.trim(), lines: state.lines });
+		try {
+			await store.saveOrder({ ...order, customerName: state.customerName.trim(), note: state.note.trim(), lines: state.lines });
+		} catch (error) {
+			console.error(error);
+			saveButton.disabled = false;
+			form.errorsBox.replaceChildren(h('div', {}, SAVE_FAILED));
+			return;
+		}
 		back();
 	});
 	deleteButton.addEventListener('click', () => {
