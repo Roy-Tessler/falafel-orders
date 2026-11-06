@@ -41,6 +41,14 @@ nav {
 	background: var(--text);
 }
 
+nav .bsd {
+	flex: 0 0 100%;
+	text-align: center;
+	font-size: 0.75rem;
+	line-height: 1;
+	color: #fff;
+}
+
 nav a {
 	flex: 0 0 auto;
 	display: flex;
