@@ -38,6 +38,10 @@ export function changeQty(lines, itemId, delta) {
 		.filter(l => l.qty > 0);
 }
 
+export function removeLine(lines, itemId) {
+	return lines.filter(l => l.itemId !== itemId);
+}
+
 export function orderTotal(lines) {
 	return lines.reduce((sum, l) => sum + l.price * l.qty, 0);
 }

@@ -1,20 +1,21 @@
-import { addItem, changeQty, orderTotal, validateOrder, createOrder } from '../logic/model.js';
+import { addItem, changeQty, removeLine, orderTotal, validateOrder, createOrder } from '../logic/model.js';
 import { validatePayments } from '../logic/payments.js';
 import { h, icon, formatMoney, confirmPanel, showToast, playAnimation, SAVE_FAILED } from '../dom.js';
 import { emptyDraft, loadDraft, storeDraft, clearDraft } from './draft.js';
 import { paymentChoice, draftPayments } from './paymentChoice.js';
 import { customerPicker } from './customerPicker.js';
 
-function lineRow(line, flash, onChange) {
+function lineRow(line, flash, handlers) {
 	const flashed = flash?.itemId === line.itemId;
 	return h('div', { class: flashed && flash.isNew ? 'order-line line-new' : 'order-line' },
 		h('span', { class: flashed && !flash.isNew ? 'qty-badge bump' : 'qty-badge' }, String(line.qty)),
 		h('span', { class: 'grow line-name' }, line.name),
 		h('div', { class: 'stepper' },
-			h('button', { class: 'step-button', 'aria-label': 'הוסף', onclick: () => onChange(line.itemId, 1) }, icon('plus')),
-			h('button', { class: 'step-button minus', 'aria-label': 'הפחת', onclick: () => onChange(line.itemId, -1) }, icon('minus')),
+			h('button', { class: 'step-button', 'aria-label': 'הוסף', onclick: () => handlers.step(line.itemId, 1) }, icon('plus')),
+			h('button', { class: 'step-button minus', 'aria-label': 'הפחת', onclick: () => handlers.step(line.itemId, -1) }, icon('minus')),
 		),
 		h('span', { class: 'line-total' }, formatMoney(line.price * line.qty)),
+		h('button', { class: 'remove-line', 'aria-label': `הסר ${line.name}`, onclick: () => handlers.remove(line.itemId) }, icon('trash')),
 	);
 }
 
@@ -38,13 +39,20 @@ function buildForm(menu, state, onChange) {
 		oninput: e => { state.note = e.target.value; onChange(); } });
 
 	let flash = null;
-	function refresh() {
-		linesBox.replaceChildren(...state.lines.map(line => lineRow(line, flash, (itemId, delta) => {
+	const update = lines => {
+		state.lines = lines;
+		refresh();
+		onChange();
+	};
+	const handlers = {
+		step: (itemId, delta) => {
 			flash = { itemId, isNew: false };
-			state.lines = changeQty(state.lines, itemId, delta);
-			refresh();
-			onChange();
-		})));
+			update(changeQty(state.lines, itemId, delta));
+		},
+		remove: itemId => update(removeLine(state.lines, itemId)),
+	};
+	function refresh() {
+		linesBox.replaceChildren(...state.lines.map(line => lineRow(line, flash, handlers)));
 		flash = null;
 		const text = `סה"כ: ${formatMoney(orderTotal(state.lines))}`;
 		if (totalBox.textContent && totalBox.textContent !== text) {

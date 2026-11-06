@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
 	DEFAULT_MENU, eveningKey, addItem, changeQty, orderTotal,
-	validateOrder, createOrder, validateMenuItem, isValidImage, orderSummary,
+	validateOrder, createOrder, validateMenuItem, isValidImage, orderSummary, removeLine,
 } from '../src/logic/model.js';
 
 test('DEFAULT_MENU has the real menu', () => {
@@ -93,4 +93,14 @@ test('orderSummary lists quantity and name of each line', () => {
 
 test('orderSummary of no lines is empty', () => {
 	assert.equal(orderSummary([]), '');
+});
+
+test('removeLine drops the whole line whatever its quantity', () => {
+	const lines = [
+		{ itemId: 'a', name: 'מנה פלאפל', price: 25, qty: 5 },
+		{ itemId: 'b', name: 'שתייה', price: 10, qty: 1 },
+	];
+	assert.deepEqual(removeLine(lines, 'a'), [lines[1]]);
+	assert.equal(lines.length, 2);
+	assert.deepEqual(removeLine(lines, 'missing'), lines);
 });

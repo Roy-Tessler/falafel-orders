@@ -27,7 +27,11 @@ export function h(tag, props = {}, ...children) {
 }
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const ICON_PATHS = { plus: 'M5 12h14M12 5v14', minus: 'M5 12h14' };
+const ICON_PATHS = {
+	plus: 'M5 12h14M12 5v14',
+	minus: 'M5 12h14',
+	trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
+};
 
 export function icon(name) {
 	const svg = document.createElementNS(SVG_NS, 'svg');
