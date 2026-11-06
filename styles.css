@@ -500,9 +500,17 @@ select {
 }
 
 .save-button {
-	width: 100%;
+	flex: 1;
 	min-height: 64px;
 	font-size: 1.2rem;
+}
+
+.clear-button {
+	min-height: 64px;
+	background: #fff;
+	color: var(--danger);
+	border: 2px solid var(--danger);
+	font-weight: 700;
 }
 
 .item-image {

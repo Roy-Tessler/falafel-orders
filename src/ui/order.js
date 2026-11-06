@@ -101,9 +101,29 @@ function renderNew(store, menu, orders) {
 	parts.picker.update(state.customerName);
 	const saveButton = h('button', { class: 'primary save-button' }, 'שמור');
 	saveButton.addEventListener('click', () => saveNew(store, state, parts, saveButton, orders));
-	const view = layout('הזמנה חדשה', parts.form, parts.picker.element, h('div', {}, parts.payment.element, saveButton));
+	const buttons = h('div', { class: 'row' }, saveButton, h('button', { class: 'clear-button', onclick: () => askClear(state, parts, buttons) }, 'נקה הזמנה'));
+	const view = layout('הזמנה חדשה', parts.form, parts.picker.element, h('div', {}, parts.payment.element, buttons));
 	setTimeout(() => parts.form.nameInput.focus(), 0);
 	return view;
+}
+
+function isEmptyDraft(state) {
+	return state.lines.length === 0 && !state.customerName.trim() && !state.note.trim();
+}
+
+function askClear(state, parts, buttons) {
+	if (isEmptyDraft(state)) {
+		resetForm(state, parts);
+		return;
+	}
+	if (buttons.nextElementSibling?.classList.contains('confirm')) {
+		return;
+	}
+	buttons.after(confirmPanel('לנקות את ההזמנה ולהתחיל מחדש?', 'כן, לנקות', () => {
+		resetForm(state, parts);
+		parts.form.errorsBox.replaceChildren();
+		parts.form.nameInput.focus();
+	}));
 }
 
 async function saveNew(store, state, parts, saveButton, orders) {
