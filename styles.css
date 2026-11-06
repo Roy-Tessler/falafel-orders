@@ -36,17 +36,34 @@ nav {
 	z-index: 10;
 	display: flex;
 	flex-wrap: wrap;
+	align-items: center;
 	gap: 4px;
 	padding: 6px 8px;
 	background: var(--text);
 }
 
+.nav-links {
+	flex: 1 1 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-evenly;
+	gap: 4px;
+}
+
 nav .bsd {
-	flex: 0 0 100%;
-	text-align: center;
-	font-size: 0.75rem;
-	line-height: 1;
+	margin-inline-start: auto;
+	padding: 0 8px;
+	font-size: 0.8rem;
 	color: #fff;
+	white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+	.nav-links {
+		order: 3;
+		flex-basis: 100%;
+		justify-content: center;
+	}
 }
 
 nav a {
@@ -65,7 +82,6 @@ nav a.brand {
 	gap: 8px;
 	font-weight: 700;
 	color: var(--accent);
-	margin-inline-end: auto;
 }
 
 nav a.brand img {
