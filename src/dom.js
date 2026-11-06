@@ -26,6 +26,20 @@ export function h(tag, props = {}, ...children) {
 	return el;
 }
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const ICON_PATHS = { plus: 'M5 12h14M12 5v14', minus: 'M5 12h14' };
+
+export function icon(name) {
+	const svg = document.createElementNS(SVG_NS, 'svg');
+	svg.setAttribute('viewBox', '0 0 24 24');
+	svg.setAttribute('aria-hidden', 'true');
+	svg.setAttribute('class', 'icon');
+	const path = document.createElementNS(SVG_NS, 'path');
+	path.setAttribute('d', ICON_PATHS[name]);
+	svg.append(path);
+	return svg;
+}
+
 export function setChildren(el, ...children) {
 	el.replaceChildren(...children.flat().filter(child => child !== null && child !== undefined && child !== false));
 }

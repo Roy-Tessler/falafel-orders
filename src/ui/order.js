@@ -1,6 +1,6 @@
 import { addItem, changeQty, orderTotal, validateOrder, createOrder } from '../logic/model.js';
 import { validatePayments } from '../logic/payments.js';
-import { h, formatMoney, confirmPanel, showToast, SAVE_FAILED } from '../dom.js';
+import { h, icon, formatMoney, confirmPanel, showToast, SAVE_FAILED } from '../dom.js';
 import { emptyDraft, loadDraft, storeDraft, clearDraft } from './draft.js';
 import { paymentChoice, draftPayments } from './paymentChoice.js';
 import { customerPicker } from './customerPicker.js';
@@ -10,8 +10,8 @@ function lineRow(line, onChange) {
 		h('span', { class: 'qty-badge' }, String(line.qty)),
 		h('span', { class: 'grow line-name' }, line.name),
 		h('div', { class: 'stepper' },
-			h('button', { class: 'step-button', 'aria-label': 'הוסף', onclick: () => onChange(line.itemId, 1) }, '+'),
-			h('button', { class: 'step-button minus', 'aria-label': 'הפחת', onclick: () => onChange(line.itemId, -1) }, '−'),
+			h('button', { class: 'step-button', 'aria-label': 'הוסף', onclick: () => onChange(line.itemId, 1) }, icon('plus')),
+			h('button', { class: 'step-button minus', 'aria-label': 'הפחת', onclick: () => onChange(line.itemId, -1) }, icon('minus')),
 		),
 		h('span', { class: 'line-total' }, formatMoney(line.price * line.qty)),
 	);
