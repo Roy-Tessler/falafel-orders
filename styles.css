@@ -329,3 +329,16 @@ th, td {
 	width: 28px;
 	min-height: 28px;
 }
+
+.menu-row {
+	padding: 8px 0;
+	border-bottom: 1px solid var(--border);
+}
+
+.price-input {
+	width: 90px;
+}
+
+.removed-title {
+	margin-top: 24px;
+}
