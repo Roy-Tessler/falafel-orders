@@ -5,13 +5,13 @@ import {
 	validateOrder, createOrder, setPayment, validateMenuItem,
 } from '../src/logic/model.js';
 
-test('DEFAULT_MENU has the five placeholder items', () => {
+test('DEFAULT_MENU has the real menu', () => {
 	assert.deepEqual(DEFAULT_MENU, [
-		{ name: 'פלאפל בפיתה', price: 20 },
-		{ name: 'פלאפל בלאפה', price: 25 },
-		{ name: "צ'יפס", price: 12 },
-		{ name: 'נקניקייה', price: 18 },
-		{ name: 'שתייה', price: 7 },
+		{ name: 'מנה פלאפל', price: 25 },
+		{ name: "צ'יפס", price: 15 },
+		{ name: 'שתייה', price: 10 },
+		{ name: 'נקניקייה בלחמניה', price: 15 },
+		{ name: 'כדור פלאפל', price: 2 },
 	]);
 	assert.deepEqual(PAYMENT, { UNPAID: 'unpaid', BIT: 'bit', CASH: 'cash' });
 });
