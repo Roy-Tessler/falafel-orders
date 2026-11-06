@@ -342,3 +342,59 @@ th, td {
 .removed-title {
 	margin-top: 24px;
 }
+
+.bars {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.bar-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.bar-label {
+	width: 56px;
+}
+
+.bar-track {
+	flex: 1;
+	background: #f1e8da;
+	border-radius: 6px;
+	height: 22px;
+}
+
+.bar {
+	height: 100%;
+	background: var(--accent);
+	border-radius: 6px;
+}
+
+.bar-count {
+	width: 32px;
+	text-align: left;
+}
+
+.badge {
+	display: inline-block;
+	margin-inline-start: 8px;
+	padding: 2px 8px;
+	border-radius: 999px;
+	font-size: 0.8rem;
+}
+
+.badge.best {
+	background: #dff0d8;
+	color: var(--primary);
+}
+
+.badge.worst {
+	background: #f8dcd8;
+	color: var(--danger);
+}
+
+select {
+	margin-bottom: 12px;
+}
