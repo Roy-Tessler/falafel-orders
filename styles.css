@@ -656,3 +656,16 @@ select {
 	border-color: var(--primary);
 	color: var(--text);
 }
+
+.pay-summary {
+	font-size: 0.95rem;
+	padding-inline-start: 4px;
+}
+
+.back-button {
+	background: #fff;
+	color: var(--primary);
+	border: 2px solid var(--primary);
+	font-weight: 700;
+	margin-bottom: 8px;
+}

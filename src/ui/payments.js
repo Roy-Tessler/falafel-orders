@@ -1,7 +1,7 @@
-import { orderTotal } from '../logic/model.js';
+import { orderTotal, orderSummary } from '../logic/model.js';
 import { METHOD, STATUS, addPayment, clearPayments, paymentStatus, remainingAmount, paidAmount } from '../logic/payments.js';
 import { eveningSummary } from '../logic/stats.js';
-import { h, formatMoney, formatDate, formatTime, showToast, SAVE_FAILED } from '../dom.js';
+import { h, setChildren, formatMoney, formatDate, formatTime, showToast, SAVE_FAILED } from '../dom.js';
 
 const TAP_GUARD_MS = 600;
 const METHOD_LABELS = { [METHOD.PAYBOX]: 'פייבוקס', [METHOD.CASH]: 'מזומן' };
@@ -78,12 +78,14 @@ function actionsBox(store, order, onChange, row) {
 
 export function paymentRow(store, order, onChange) {
 	const row = h('div', { class: `pay-row ${paymentStatus(order)}` });
-	row.append(
+	setChildren(row,
 		h('div', { class: 'pay-main' },
 			h('span', { class: 'muted pay-time' }, formatTime(order.createdAt)),
 			h('a', { class: 'grow pay-name', href: `#/order/${order.id}` }, order.customerName),
 			amountBox(order),
 		),
+		h('div', { class: 'pay-summary' }, orderSummary(order.lines)),
+		order.note ? h('div', { class: 'pay-summary muted' }, order.note) : null,
 		actionsBox(store, order, onChange, row),
 	);
 	return row;

@@ -156,7 +156,9 @@ function renderEdit(store, menu, order) {
 			back();
 		}));
 	});
-	return layout(`עריכת הזמנה – ${order.customerName}`, form, null, actions);
+	const view = layout(`עריכת הזמנה – ${order.customerName}`, form, null, actions);
+	view.prepend(h('button', { class: 'back-button', onclick: back }, '→ חזרה לרשימה'));
+	return view;
 }
 
 export async function render(store, params) {

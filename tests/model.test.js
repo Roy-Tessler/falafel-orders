@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
 	DEFAULT_MENU, eveningKey, addItem, changeQty, orderTotal,
-	validateOrder, createOrder, validateMenuItem, isValidImage,
+	validateOrder, createOrder, validateMenuItem, isValidImage, orderSummary,
 } from '../src/logic/model.js';
 
 test('DEFAULT_MENU has the real menu', () => {
@@ -81,4 +81,16 @@ test('isValidImage accepts bundled images and photo data urls only', () => {
 	assert.equal(isValidImage('javascript:alert(1)'), false);
 	assert.equal(isValidImage('https://example.com/x.png'), false);
 	assert.equal(isValidImage('images/../../x.svg'), false);
+});
+
+test('orderSummary lists quantity and name of each line', () => {
+	const lines = [
+		{ itemId: 'a', name: 'מנה פלאפל', price: 25, qty: 2 },
+		{ itemId: 'b', name: 'שתייה', price: 10, qty: 1 },
+	];
+	assert.equal(orderSummary(lines), '2× מנה פלאפל, 1× שתייה');
+});
+
+test('orderSummary of no lines is empty', () => {
+	assert.equal(orderSummary([]), '');
 });

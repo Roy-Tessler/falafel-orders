@@ -42,6 +42,10 @@ export function orderTotal(lines) {
 	return lines.reduce((sum, l) => sum + l.price * l.qty, 0);
 }
 
+export function orderSummary(lines) {
+	return lines.map(l => `${l.qty}× ${l.name}`).join(', ');
+}
+
 export function validateOrder(draft) {
 	const errors = [];
 	if (!(draft.customerName || '').trim()) {

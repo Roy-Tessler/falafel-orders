@@ -1,11 +1,8 @@
 import { customerSuggestions, lastOrderOf, repeatLines } from '../logic/customers.js';
+import { orderSummary } from '../logic/model.js';
 import { h, setChildren } from '../dom.js';
 
 const MAX_SUGGESTIONS = 5;
-
-function describe(lines) {
-	return lines.map(l => `${l.qty}× ${l.name}`).join(', ');
-}
 
 export function customerPicker(orders, menu, handlers) {
 	const box = h('div', { class: 'customer-picker' });
@@ -17,7 +14,7 @@ export function customerPicker(orders, menu, handlers) {
 			return null;
 		}
 		return h('button', { class: 'repeat-button', onclick: () => handlers.onRepeat(lines) },
-			h('strong', {}, 'כמו בפעם הקודמת: '), describe(lines));
+			h('strong', {}, 'כמו בפעם הקודמת: '), orderSummary(lines));
 	}
 	function update(text) {
 		const chips = customerSuggestions(orders, text, MAX_SUGGESTIONS).map(name => h('button', {
