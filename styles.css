@@ -187,3 +187,51 @@ th, td {
 .table-scroll {
 	overflow-x: auto;
 }
+
+.item-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 10px;
+	margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+	.item-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+.item-button {
+	flex-direction: column;
+	min-height: 88px;
+	padding: 10px;
+	font-size: 1.1rem;
+	background: #fff3df;
+	border-color: var(--accent);
+}
+
+.item-price {
+	color: var(--muted);
+	font-size: 1rem;
+}
+
+.order-line {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 0;
+	border-bottom: 1px solid var(--border);
+}
+
+.line-total {
+	min-width: 70px;
+	text-align: left;
+}
+
+.order-lines {
+	margin-bottom: 12px;
+}
+
+.big-total {
+	margin-bottom: 12px;
+}
