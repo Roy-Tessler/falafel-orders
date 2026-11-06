@@ -1,5 +1,5 @@
 import { eveningList, eveningSummary, trend, weekdayOf } from '../logic/stats.js';
-import { h, formatMoney, formatDate } from '../dom.js';
+import { h, formatMoney, formatDate, formatShortDate } from '../dom.js';
 
 const LAST_N = 8;
 const WEEKDAY_FILTERS = ['רק ימי ראשון', 'רק ימי שני', 'רק ימי שלישי', 'רק ימי רביעי', 'רק ימי חמישי', 'רק ימי שישי', 'רק שבתות'];
@@ -37,21 +37,43 @@ function eveningSection(orders) {
 	);
 }
 
+function itemRow(item, index, last) {
+	return h('tr', {},
+		h('td', {}, item.name,
+			index === 0 ? h('span', { class: 'badge best' }, 'הכי נמכר') : null,
+			index === last && last > 0 ? h('span', { class: 'badge worst' }, 'הכי חלש') : null),
+		item.perDate.map(qty => h('td', {}, String(qty))),
+		h('td', {}, h('strong', {}, String(item.total))),
+		h('td', {}, formatMoney(item.income)),
+	);
+}
+
+function incomeRow(result) {
+	return h('tr', { class: 'income-row' },
+		h('td', {}, h('strong', {}, 'הכנסה')),
+		result.incomePerDate.map(value => h('td', {}, h('strong', {}, formatMoney(value)))),
+		h('td', {}),
+		h('td', {}, h('strong', {}, formatMoney(result.incomeTotal))),
+	);
+}
+
 function trendTable(result) {
 	if (result.dates.length < 2) {
 		return h('p', { class: 'muted' }, 'צריך לפחות שני ערבים כדי לראות מגמה');
 	}
 	const last = result.items.length - 1;
-	return h('div', { class: 'table-scroll' }, h('table', {},
-		h('thead', {}, h('tr', {}, h('th', {}, 'פריט'), result.dates.map(d => h('th', {}, formatDate(d))), h('th', {}, 'סה"כ'))),
-		h('tbody', {}, result.items.map((item, index) => h('tr', {},
-			h('td', {}, item.name,
-				index === 0 ? h('span', { class: 'badge best' }, 'הכי נמכר') : null,
-				index === last && last > 0 ? h('span', { class: 'badge worst' }, 'הכי חלש') : null),
-			item.perDate.map(qty => h('td', {}, String(qty))),
-			h('td', {}, h('strong', {}, String(item.total))),
-		))),
-	));
+	const average = Math.round(result.incomeTotal / result.dates.length);
+	return h('div', {},
+		h('div', { class: 'totals row' },
+			stat(`הכנסה ב-${result.dates.length} ערבים`, formatMoney(result.incomeTotal)),
+			stat('ממוצע לערב', formatMoney(average))),
+		h('div', { class: 'table-scroll' }, h('table', {},
+			h('thead', {}, h('tr', {}, h('th', {}, 'פריט'), result.dates.map(d => h('th', {}, formatShortDate(d))),
+				h('th', {}, 'כמות'), h('th', {}, 'הכנסה'))),
+			h('tbody', {}, result.items.map((item, index) => itemRow(item, index, last))),
+			h('tfoot', {}, incomeRow(result)),
+		)),
+	);
 }
 
 function trendSection(orders) {

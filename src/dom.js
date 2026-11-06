@@ -59,6 +59,11 @@ export function formatDate(date) {
 	return `${DAY_NAMES[day]} ${d}.${m}`;
 }
 
+export function formatShortDate(date) {
+	const [, m, d] = date.split('-').map(Number);
+	return `${d}.${m}`;
+}
+
 export function confirmPanel(message, yesLabel, onYes, onNo) {
 	const panel = h('div', { class: 'card confirm', role: 'alertdialog' },
 		h('p', {}, message),

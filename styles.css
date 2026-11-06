@@ -669,3 +669,8 @@ select {
 	font-weight: 700;
 	margin-bottom: 8px;
 }
+
+.income-row td {
+	border-top: 2px solid var(--text);
+	color: var(--paid-cash);
+}

@@ -92,7 +92,7 @@ test('trend takes the last N dates and filters by weekday', () => {
 	assert.deepEqual(t.items.map(i => [i.name, i.perDate, i.total]), [['שתייה', [0, 5], 5], ["צ'יפס", [2, 0], 2], ['פלאפל', [1, 0], 1]]);
 	const thu = trend(orders, { lastN: 8, weekday: 4 });
 	assert.deepEqual(thu.dates, ['2026-10-29', '2026-11-05']);
-	assert.deepEqual(thu.items[0], { itemId: 'a', name: 'פלאפל', perDate: [4, 1], total: 5 });
+	assert.deepEqual(thu.items[0], { itemId: 'a', name: 'פלאפל', perDate: [4, 1], total: 5, income: 100 });
 });
 
 test('partial payments count toward their method and leave a remainder', () => {
@@ -105,4 +105,15 @@ test('partial payments count toward their method and leave a remainder', () => {
 	const groups = unpaidByEvening([partial]);
 	assert.equal(groups[0].total, 20);
 	assert.equal(groups[0].orders.length, 1);
+});
+
+test('trend reports income per evening, per item, and in total', () => {
+	const orders = [
+		o('2026-11-02', 19, 0, 'paybox', [FALAFEL(2)]),
+		o('2026-11-04', 19, 0, 'unpaid', [FALAFEL(1), DRINK(3)]),
+	];
+	const t = trend(orders, { lastN: 8, weekday: null });
+	assert.deepEqual(t.incomePerDate, [2 * FALAFEL(1).price, FALAFEL(1).price + 3 * DRINK(1).price]);
+	assert.equal(t.incomeTotal, 3 * FALAFEL(1).price + 3 * DRINK(1).price);
+	assert.deepEqual(t.items.map(i => [i.name, i.income]), [['פלאפל', 3 * FALAFEL(1).price], ['שתייה', 3 * DRINK(1).price]]);
 });

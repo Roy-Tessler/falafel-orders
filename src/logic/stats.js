@@ -117,8 +117,15 @@ export function trend(orders, options) {
 		name: item.name,
 		perDate: dates.map(date => qtyOn(selected, item.itemId, date)),
 		total: item.qty,
+		income: item.amount,
 	}));
-	return { dates, items: items.sort((a, b) => b.total - a.total) };
+	const incomePerDate = dates.map(date => sumWhere(selected, o => o.eveningDate === date));
+	return {
+		dates,
+		items: items.sort((a, b) => b.total - a.total),
+		incomePerDate,
+		incomeTotal: incomePerDate.reduce((sum, value) => sum + value, 0),
+	};
 }
 
 function qtyOn(orders, itemId, date) {
