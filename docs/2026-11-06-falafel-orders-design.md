@@ -65,7 +65,7 @@ Mockup reference: same file, screen 2.
 ### 5. Menu
 
 - The operator adds, renames, deletes, and reorders items, and changes prices.
-- Start with the real menu: מנה פלאפל ₪25, צ'יפס ₪15, שתייה ₪10, נקניקייה בלחמניה ₪15, כדור פלאפל ₪2. The operator can change it.
+- Start with the real menu: מנה פלאפל ₪25, חצי מנה ₪12, צלחת חומוס עם פלאפל וסלט ₪28, נקניקיה בלחמניה ₪15, צ'יפס ₪15, מלבי ₪10, פחית שתייה ₪10. The operator can change it.
 - Each saved order stores the item name and price at the time of the order. A later price change or rename does not change old orders.
 - Deleting an item removes it from the order screen only. Old orders keep it.
 - No item options or variants, and no free-price "other item" button (the mockup showed one, the designer dropped it). If the operator needs a variant or a new item, she creates it in the menu. This takes a few seconds and keeps the statistics clean.

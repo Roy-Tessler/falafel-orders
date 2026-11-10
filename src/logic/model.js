@@ -2,10 +2,12 @@ import { isMethod } from './payments.js';
 
 export const DEFAULT_MENU = Object.freeze([
 	{ name: 'מנה פלאפל', price: 25, image: 'images/falafel.svg' },
+	{ name: 'חצי מנה', price: 12, image: 'images/half.svg' },
+	{ name: 'צלחת חומוס עם פלאפל וסלט', price: 28, image: 'images/hummus.svg' },
+	{ name: 'נקניקיה בלחמניה', price: 15, image: 'images/hotdog.svg' },
 	{ name: "צ'יפס", price: 15, image: 'images/fries.svg' },
-	{ name: 'שתייה', price: 10, image: 'images/drink.svg' },
-	{ name: 'נקניקייה בלחמניה', price: 15, image: 'images/hotdog.svg' },
-	{ name: 'כדור פלאפל', price: 2, image: 'images/ball.svg' },
+	{ name: 'מלבי', price: 10, image: 'images/malabi.svg' },
+	{ name: 'פחית שתייה', price: 10, image: 'images/drink.svg' },
 ]);
 
 const BUNDLED_IMAGE = /^images\/[a-z0-9-]+\.svg$/;

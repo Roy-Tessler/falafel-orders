@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
 import {
 	DEFAULT_MENU, eveningKey, addItem, changeQty, orderTotal,
 	validateOrder, createOrder, validateMenuItem, isValidImage, orderSummary, removeLine,
@@ -8,11 +9,21 @@ import {
 test('DEFAULT_MENU has the real menu', () => {
 	assert.deepEqual(DEFAULT_MENU, [
 		{ name: 'מנה פלאפל', price: 25, image: 'images/falafel.svg' },
+		{ name: 'חצי מנה', price: 12, image: 'images/half.svg' },
+		{ name: 'צלחת חומוס עם פלאפל וסלט', price: 28, image: 'images/hummus.svg' },
+		{ name: 'נקניקיה בלחמניה', price: 15, image: 'images/hotdog.svg' },
 		{ name: "צ'יפס", price: 15, image: 'images/fries.svg' },
-		{ name: 'שתייה', price: 10, image: 'images/drink.svg' },
-		{ name: 'נקניקייה בלחמניה', price: 15, image: 'images/hotdog.svg' },
-		{ name: 'כדור פלאפל', price: 2, image: 'images/ball.svg' },
+		{ name: 'מלבי', price: 10, image: 'images/malabi.svg' },
+		{ name: 'פחית שתייה', price: 10, image: 'images/drink.svg' },
 	]);
+});
+
+test('every DEFAULT_MENU image exists and is cached for offline use', () => {
+	const serviceWorker = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
+	for (const item of DEFAULT_MENU) {
+		assert.ok(existsSync(new URL(`../${item.image}`, import.meta.url)), item.image);
+		assert.ok(serviceWorker.includes(`'./${item.image}'`), item.image);
+	}
 });
 
 test('eveningKey uses local date, and 00:05 belongs to the new day', () => {

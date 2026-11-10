@@ -1,4 +1,4 @@
-const CACHE = 'falafel-v15';
+const CACHE = 'falafel-v16';
 const FILES = [
 	'./',
 	'./index.html',
@@ -12,6 +12,9 @@ const FILES = [
 	'./images/drink.svg',
 	'./images/hotdog.svg',
 	'./images/ball.svg',
+	'./images/half.svg',
+	'./images/hummus.svg',
+	'./images/malabi.svg',
 	'./src/app.js',
 	'./src/photo.js',
 	'./src/fontSize.js',
