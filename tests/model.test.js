@@ -32,12 +32,21 @@ test('eveningKey uses local date, and 00:05 belongs to the new day', () => {
 	assert.equal(eveningKey(new Date(2026, 0, 3, 12, 0)), '2026-01-03');
 });
 
-test('addItem appends then increments', () => {
+test('addItem adds a new line then increments it', () => {
 	const item = { id: 'a', name: "צ'יפס", price: 12 };
 	const one = addItem([], item);
 	assert.deepEqual(one, [{ itemId: 'a', name: "צ'יפס", price: 12, qty: 1 }]);
 	assert.equal(addItem(one, item)[0].qty, 2);
 	assert.equal(one[0].qty, 1);
+});
+
+test('addItem puts the added item first, new or existing', () => {
+	const fries = { id: 'a', name: "צ'יפס", price: 12 };
+	const drink = { id: 'b', name: 'שתייה', price: 7 };
+	const both = addItem(addItem([], fries), drink);
+	assert.deepEqual(both.map(l => l.itemId), ['b', 'a']);
+	const again = addItem(both, fries);
+	assert.deepEqual(again.map(l => [l.itemId, l.qty]), [['a', 2], ['b', 1]]);
 });
 
 test('changeQty removes the line at zero', () => {

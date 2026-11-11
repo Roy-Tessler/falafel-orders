@@ -28,10 +28,12 @@ export function eveningKey(date) {
 }
 
 export function addItem(lines, item) {
-	if (lines.some(l => l.itemId === item.id)) {
-		return lines.map(l => (l.itemId === item.id ? { ...l, qty: l.qty + 1 } : l));
+	const existing = lines.find(l => l.itemId === item.id);
+	const others = lines.filter(l => l.itemId !== item.id);
+	if (existing) {
+		return [{ ...existing, qty: existing.qty + 1 }, ...others];
 	}
-	return [...lines, { itemId: item.id, name: item.name, price: item.price, qty: 1 }];
+	return [{ itemId: item.id, name: item.name, price: item.price, qty: 1 }, ...others];
 }
 
 export function changeQty(lines, itemId, delta) {

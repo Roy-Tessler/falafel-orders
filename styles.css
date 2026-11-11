@@ -236,9 +236,15 @@ th, td {
 
 .item-grid {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 10px;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 8px;
 	margin-bottom: 16px;
+}
+
+@media (max-width: 900px) {
+	.item-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
 }
 
 @media (max-width: 600px) {
@@ -248,13 +254,34 @@ th, td {
 }
 
 .item-button {
-	flex-direction: column;
-	min-height: 88px;
-	gap: 4px;
-	padding: 10px;
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-template-areas:
+		"image name"
+		"image price";
+	align-content: center;
+	justify-items: start;
+	column-gap: 8px;
+	padding: 6px 10px;
 	font-size: 1.1rem;
+	line-height: 1.2;
+	text-align: start;
 	background: #fff3df;
 	border-color: var(--accent);
+}
+
+.item-button .item-image {
+	grid-area: image;
+	width: 44px;
+	height: 44px;
+}
+
+.item-button .item-name {
+	grid-area: name;
+}
+
+.item-button .item-price {
+	grid-area: price;
 }
 
 .item-price {
