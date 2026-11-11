@@ -1,7 +1,7 @@
-import { orderTotal, orderSummary } from '../logic/model.js';
+import { orderTotal, orderSummary, eveningKey } from '../logic/model.js';
 import { METHOD, STATUS, addPayment, clearPayments, paymentStatus, remainingAmount, paidAmount } from '../logic/payments.js';
 import { eveningSummary } from '../logic/stats.js';
-import { h, setChildren, formatMoney, formatDate, formatTime, showToast, SAVE_FAILED } from '../dom.js';
+import { h, icon, setChildren, formatMoney, formatDate, formatTime, showToast, SAVE_FAILED } from '../dom.js';
 
 const TAP_GUARD_MS = 600;
 const METHOD_LABELS = { [METHOD.PAYBOX]: 'פייבוקס', [METHOD.CASH]: 'מזומן' };
@@ -74,7 +74,7 @@ function actionsBox(store, order, onChange, row) {
 			e.target.remove();
 			row.append(otherAmountForm(store, order, onChange));
 		} }, 'סכום אחר') : null,
-		order.payments.length > 0 ? h('button', { class: 'small', onclick: undo }, 'בטל') : null,
+		order.payments.length > 0 ? h('button', { class: 'small', onclick: undo }, 'בטל תשלום') : null,
 	);
 }
 
@@ -133,8 +133,11 @@ export async function render(store, params) {
 		h('input', { type: 'checkbox', onchange: e => { filter.unpaidOnly = e.target.checked; keepVisible.clear(); refresh(); } }),
 		'רק מי שלא שילם');
 	refresh();
+	const isToday = params.date === eveningKey(new Date());
 	return h('section', {},
-		h('h1', {}, formatDate(params.date)),
+		h('div', { class: 'row screen-head' },
+			h('h1', { class: 'grow' }, formatDate(params.date)),
+			isToday ? h('a', { class: 'button primary', href: '#/order' }, icon('plus', 'text-icon'), 'הזמנה חדשה') : null),
 		h('p', { class: 'muted' }, `${orders.length} הזמנות · ההזמנה האחרונה למעלה`),
 		totals,
 		h('div', { class: 'card row' }, h('div', { class: 'grow' }, search), toggle),

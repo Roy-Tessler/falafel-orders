@@ -33,11 +33,11 @@ const ICON_PATHS = {
 	trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
 };
 
-export function icon(name) {
+export function icon(name, extraClass = '') {
 	const svg = document.createElementNS(SVG_NS, 'svg');
 	svg.setAttribute('viewBox', '0 0 24 24');
 	svg.setAttribute('aria-hidden', 'true');
-	svg.setAttribute('class', 'icon');
+	svg.setAttribute('class', `icon ${extraClass}`.trim());
 	const path = document.createElementNS(SVG_NS, 'path');
 	path.setAttribute('d', ICON_PATHS[name]);
 	svg.append(path);
@@ -96,8 +96,10 @@ export function playAnimation(el, className) {
 
 export const SAVE_FAILED = 'השמירה נכשלה, נסו שוב';
 
+const TOAST_MS = 2500;
+
 export function showToast(message, isError = false) {
 	const toast = h('div', { class: isError ? 'toast toast-error' : 'toast', role: 'status' }, message);
 	document.body.append(toast);
-	setTimeout(() => toast.remove(), 2000);
+	setTimeout(() => toast.remove(), TOAST_MS);
 }

@@ -50,14 +50,6 @@ nav {
 	gap: 4px;
 }
 
-nav .bsd {
-	margin-inline-start: auto;
-	padding: 0 8px;
-	font-size: 0.8rem;
-	color: #fff;
-	white-space: nowrap;
-}
-
 @media (max-width: 860px) {
 	.nav-links {
 		order: 3;
@@ -79,10 +71,6 @@ nav a {
 }
 
 .nav-icon {
-	position: relative;
-	top: 0.08em;
-	width: 1em;
-	height: 1em;
 	margin-inline-end: 6px;
 	fill: none;
 	stroke: currentColor;
@@ -188,6 +176,14 @@ input, textarea, select {
 	align-items: center;
 }
 
+.screen-head {
+	margin-bottom: 12px;
+}
+
+.screen-head h1 {
+	margin: 0;
+}
+
 .grow {
 	flex: 1 1 auto;
 }
@@ -229,6 +225,7 @@ input, textarea, select {
 }
 
 .confirm {
+	margin-top: 12px;
 	border: 2px solid var(--danger);
 }
 
@@ -698,6 +695,13 @@ select {
 	stroke: currentColor;
 	stroke-width: 3.5;
 	stroke-linecap: round;
+}
+
+.text-icon {
+	position: relative;
+	top: 0.08em;
+	width: 1em;
+	height: 1em;
 }
 
 .payment-choice.four {

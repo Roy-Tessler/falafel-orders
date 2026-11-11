@@ -121,7 +121,7 @@ function renderNew(store, menu, orders) {
 	parts.form.nameInput.addEventListener('input', () => parts.picker.update(parts.form.nameInput.value));
 	parts.picker.update(state.customerName);
 	const saveButton = h('button', { class: 'primary save-button' }, 'שמור');
-	saveButton.addEventListener('click', () => saveNew(store, state, parts, saveButton, orders));
+	saveButton.addEventListener('click', () => saveNew(store, state, parts, saveButton));
 	const buttons = h('div', { class: 'row' }, saveButton, h('button', { class: 'clear-button', onclick: () => askClear(state, parts, buttons) }, 'נקה הזמנה'));
 	const view = layout('הזמנה חדשה', parts.form, parts.picker.element, h('div', {}, parts.payment.element, buttons));
 	setTimeout(() => parts.form.nameInput.focus(), 0);
@@ -147,7 +147,7 @@ function askClear(state, parts, buttons) {
 	}));
 }
 
-async function saveNew(store, state, parts, saveButton, orders) {
+async function saveNew(store, state, parts, saveButton) {
 	if (saveButton.disabled || !showErrors(parts.form, newOrderErrors(state))) {
 		return;
 	}
@@ -156,14 +156,13 @@ async function saveNew(store, state, parts, saveButton, orders) {
 		const total = orderTotal(state.lines);
 		const order = createOrder({ ...state, payments: draftPayments(state, total) }, new Date(), () => crypto.randomUUID());
 		await store.saveOrder(order);
-		orders.push(order);
-		resetForm(state, parts);
+		clearDraft();
 		showToast('ההזמנה נשמרה');
+		location.hash = `#/evening/${order.eveningDate}`;
 	} catch (error) {
 		console.error(error);
-		showErrors(parts.form, [SAVE_FAILED]);
-	} finally {
 		saveButton.disabled = false;
+		showErrors(parts.form, [SAVE_FAILED]);
 		parts.form.nameInput.focus();
 	}
 }
