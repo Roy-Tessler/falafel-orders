@@ -139,6 +139,7 @@ export async function render(store) {
 		const active = menu.filter(i => i.active);
 		const removed = menu.filter(i => !i.active && i.name);
 		setChildren(view,
+			h('a', { class: 'button back-button', href: '#/backup' }, '→ חזרה להגדרות'),
 			h('h1', {}, 'תפריט ומחירים'),
 			h('p', { class: 'muted' }, 'שינוי מחיר משפיע רק על הזמנות חדשות.'),
 			h('div', { class: 'card' }, active.map((item, index) => editableRow(store, item, {

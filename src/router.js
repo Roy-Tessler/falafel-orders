@@ -38,10 +38,14 @@ async function loadScreen(modulePath) {
 	}
 }
 
+const NAV_PARENTS = [['/menu', '/backup']];
+
 function markActiveLink(path) {
+	const parent = NAV_PARENTS.find(([prefix]) => path.startsWith(prefix));
+	const navPath = parent ? parent[1] : path;
 	document.querySelectorAll('nav a').forEach(link => {
 		const target = link.getAttribute('href').slice(1);
-		link.classList.toggle('active', target === '/' ? path === '/' : path.startsWith(target));
+		link.classList.toggle('active', target === '/' ? navPath === '/' : navPath.startsWith(target));
 	});
 }
 

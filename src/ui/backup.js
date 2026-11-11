@@ -91,6 +91,10 @@ export async function render(store) {
 		} }, label);
 		view.replaceChildren(
 			h('h1', {}, 'הגדרות'),
+			h('div', { class: 'card' },
+				h('h2', {}, 'תפריט ומחירים'),
+				h('p', { class: 'muted' }, 'שמות, מחירים, סדר ותמונות של הפריטים.'),
+				h('a', { class: 'button primary', href: '#/menu' }, 'עריכת התפריט')),
 			fontSizeControl(),
 			h('h2', {}, 'גיבוי'),
 			h('p', {}, 'כל הנתונים שמורים רק במכשיר הזה. שמרו גיבוי פעם בשבוע, למשל בגוגל דרייב או בוואטסאפ לעצמכם.'),
