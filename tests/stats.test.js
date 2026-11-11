@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { eveningList, eveningSummary, unpaidByEvening, trend } from '../src/logic/stats.js';
+import { eveningList, eveningSummary, unpaidByEvening, trend, ordersInPeriod, PERIOD } from '../src/logic/stats.js';
 
 let seq = 0;
 function o(date, hh, mm, payment, lines) {
@@ -55,6 +55,22 @@ test('eveningSummary counts falafel balls: 5 per portion, 3 per half, 6 per humm
 	assert.equal(eveningSummary([o('2026-11-06', 19, 0, 'cash', [DRINK(2)])]).falafelBalls, 0);
 });
 
+test('ordersInPeriod picks orders by evening date relative to today', () => {
+	const dates = ['2025-01-01', '2025-12-31', '2026-01-01', '2026-10-01', '2026-10-31', '2026-11-01', '2026-11-11'];
+	const orders = dates.map(date => o(date, 19, 0, 'cash', [FRIES(1)]));
+	const pick = period => ordersInPeriod(orders, period, '2026-11-11').map(order => order.eveningDate);
+	assert.deepEqual(pick(PERIOD.ALL), dates);
+	assert.deepEqual(pick(PERIOD.THIS_MONTH), ['2026-11-01', '2026-11-11']);
+	assert.deepEqual(pick(PERIOD.LAST_MONTH), ['2026-10-01', '2026-10-31']);
+	assert.deepEqual(pick(PERIOD.THIS_YEAR), ['2026-01-01', '2026-10-01', '2026-10-31', '2026-11-01', '2026-11-11']);
+	assert.deepEqual(pick(PERIOD.LAST_YEAR), ['2025-01-01', '2025-12-31']);
+});
+
+test('ordersInPeriod: last month in January is December of the previous year', () => {
+	const orders = ['2025-12-05', '2026-01-03'].map(date => o(date, 19, 0, 'cash', [FRIES(1)]));
+	assert.deepEqual(ordersInPeriod(orders, PERIOD.LAST_MONTH, '2026-01-10').map(order => order.eveningDate), ['2025-12-05']);
+});
+
 test('byHalfHour includes empty slots between orders', () => {
 	const s = eveningSummary([o('2026-11-06', 19, 0, 'paybox', [FALAFEL(1)]), o('2026-11-06', 20, 10, 'paybox', [FALAFEL(1)])]);
 	assert.deepEqual(s.byHalfHour, [{ label: '19:00', count: 1 }, { label: '19:30', count: 0 }, { label: '20:00', count: 1 }]);
@@ -97,11 +113,32 @@ test('trend takes the last N dates and filters by weekday', () => {
 		o('2026-11-06', 19, 0, 'paybox', [DRINK(5)]),
 	];
 	const t = trend(orders, { lastN: 2, weekday: null });
-	assert.deepEqual(t.dates, ['2026-11-05', '2026-11-06']);
-	assert.deepEqual(t.items.map(i => [i.name, i.perDate, i.total]), [['שתייה', [0, 5], 5], ["צ'יפס", [2, 0], 2], ['פלאפל', [1, 0], 1]]);
+	assert.deepEqual(t.columns, ['2026-11-05', '2026-11-06']);
+	assert.deepEqual(t.items.map(i => [i.name, i.perColumn, i.total]), [['שתייה', [0, 5], 5], ["צ'יפס", [2, 0], 2], ['פלאפל', [1, 0], 1]]);
 	const thu = trend(orders, { lastN: 8, weekday: 4 });
-	assert.deepEqual(thu.dates, ['2026-10-29', '2026-11-05']);
-	assert.deepEqual(thu.items[0], { itemId: 'a', name: 'פלאפל', perDate: [4, 1], total: 5, income: 100 });
+	assert.deepEqual(thu.columns, ['2026-10-29', '2026-11-05']);
+	assert.deepEqual(thu.items[0], { itemId: 'a', name: 'פלאפל', perColumn: [4, 1], total: 5, income: 100 });
+});
+
+test('trend can limit to a period and a weekday together', () => {
+	const orders = ['2026-10-26', '2026-11-02', '2026-11-04', '2026-11-09'].map(date => o(date, 19, 0, 'cash', [FRIES(1)]));
+	const mondays = trend(orders, { lastN: Infinity, weekday: 1, period: PERIOD.THIS_MONTH, todayKey: '2026-11-11' });
+	assert.deepEqual(mondays.columns, ['2026-11-02', '2026-11-09']);
+	const lastMonth = trend(orders, { lastN: Infinity, weekday: null, period: PERIOD.LAST_MONTH, todayKey: '2026-11-11' });
+	assert.deepEqual(lastMonth.columns, ['2026-10-26']);
+});
+
+test('trend by month has one column per month and keeps the last N months', () => {
+	const orders = [
+		o('2026-09-07', 19, 0, 'cash', [FRIES(1)]),
+		o('2026-10-05', 19, 0, 'cash', [FRIES(2)]),
+		o('2026-10-12', 19, 0, 'cash', [FRIES(3)]),
+		o('2026-11-02', 19, 0, 'cash', [FRIES(4)]),
+	];
+	const t = trend(orders, { lastN: 2, weekday: null, byMonth: true });
+	assert.deepEqual(t.columns, ['2026-10', '2026-11']);
+	assert.deepEqual(t.items[0].perColumn, [5, 4]);
+	assert.deepEqual(t.incomePerColumn, [5 * FRIES(1).price, 4 * FRIES(1).price]);
 });
 
 test('partial payments count toward their method and leave a remainder', () => {
@@ -122,7 +159,7 @@ test('trend reports income per evening, per item, and in total', () => {
 		o('2026-11-04', 19, 0, 'unpaid', [FALAFEL(1), DRINK(3)]),
 	];
 	const t = trend(orders, { lastN: 8, weekday: null });
-	assert.deepEqual(t.incomePerDate, [2 * FALAFEL(1).price, FALAFEL(1).price + 3 * DRINK(1).price]);
+	assert.deepEqual(t.incomePerColumn, [2 * FALAFEL(1).price, FALAFEL(1).price + 3 * DRINK(1).price]);
 	assert.equal(t.incomeTotal, 3 * FALAFEL(1).price + 3 * DRINK(1).price);
 	assert.deepEqual(t.items.map(i => [i.name, i.income]), [['פלאפל', 3 * FALAFEL(1).price], ['שתייה', 3 * DRINK(1).price]]);
 });

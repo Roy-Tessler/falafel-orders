@@ -100,6 +100,38 @@ export function eveningSummary(orders) {
 	};
 }
 
+export const PERIOD = Object.freeze({
+	ALL: 'all',
+	THIS_MONTH: 'this-month',
+	LAST_MONTH: 'last-month',
+	THIS_YEAR: 'this-year',
+	LAST_YEAR: 'last-year',
+});
+
+function periodBounds(period, todayKey) {
+	const year = Number(todayKey.slice(0, 4));
+	const month = Number(todayKey.slice(5, 7));
+	const lastMonthYear = month === 1 ? year - 1 : year;
+	const lastMonth = String(month === 1 ? 12 : month - 1).padStart(2, '0');
+	switch (period) {
+		case PERIOD.THIS_MONTH:
+			return [`${todayKey.slice(0, 7)}-01`, todayKey];
+		case PERIOD.LAST_MONTH:
+			return [`${lastMonthYear}-${lastMonth}-01`, `${lastMonthYear}-${lastMonth}-31`];
+		case PERIOD.THIS_YEAR:
+			return [`${year}-01-01`, todayKey];
+		case PERIOD.LAST_YEAR:
+			return [`${year - 1}-01-01`, `${year - 1}-12-31`];
+		default:
+			return ['', '9999-12-31'];
+	}
+}
+
+export function ordersInPeriod(orders, period, todayKey) {
+	const [from, to] = periodBounds(period, todayKey);
+	return orders.filter(o => o.eveningDate >= from && o.eveningDate <= to);
+}
+
 export function unpaidByEvening(orders) {
 	const unpaid = orders.filter(o => remainingAmount(o) > 0);
 	return [...groupByDate(unpaid).entries()]
@@ -113,30 +145,31 @@ export function weekdayOf(date) {
 }
 
 export function trend(orders, options) {
-	const allDates = [...new Set(orders.map(o => o.eveningDate))]
-		.filter(date => options.weekday === null || weekdayOf(date) === options.weekday)
-		.sort();
-	const dates = allDates.slice(-options.lastN);
-	const selected = orders.filter(o => dates.includes(o.eveningDate));
+	const { lastN, weekday = null, period = null, todayKey = '', byMonth = false } = options;
+	const columnOf = byMonth ? o => o.eveningDate.slice(0, 7) : o => o.eveningDate;
+	const inRange = period ? ordersInPeriod(orders, period, todayKey) : orders;
+	const filtered = inRange.filter(o => weekday === null || weekdayOf(o.eveningDate) === weekday);
+	const columns = [...new Set(filtered.map(columnOf))].sort().slice(-lastN);
+	const selected = filtered.filter(o => columns.includes(columnOf(o)));
+	const inColumn = column => selected.filter(o => columnOf(o) === column);
 	const items = itemTotals(selected).map(item => ({
 		itemId: item.itemId,
 		name: item.name,
-		perDate: dates.map(date => qtyOn(selected, item.itemId, date)),
+		perColumn: columns.map(column => qtyOf(inColumn(column), item.itemId)),
 		total: item.qty,
 		income: item.amount,
 	}));
-	const incomePerDate = dates.map(date => sumWhere(selected, o => o.eveningDate === date));
+	const incomePerColumn = columns.map(column => sumWhere(inColumn(column), () => true));
 	return {
-		dates,
+		columns,
 		items: items.sort((a, b) => b.total - a.total),
-		incomePerDate,
-		incomeTotal: incomePerDate.reduce((sum, value) => sum + value, 0),
+		incomePerColumn,
+		incomeTotal: incomePerColumn.reduce((sum, value) => sum + value, 0),
 	};
 }
 
-function qtyOn(orders, itemId, date) {
+function qtyOf(orders, itemId) {
 	return orders
-		.filter(o => o.eveningDate === date)
 		.flatMap(o => o.lines)
 		.filter(l => l.itemId === itemId)
 		.reduce((sum, l) => sum + l.qty, 0);
