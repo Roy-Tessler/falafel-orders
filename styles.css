@@ -50,6 +50,14 @@ nav {
 	gap: 4px;
 }
 
+nav .bsd {
+	margin-inline-start: auto;
+	padding: 0 8px;
+	font-size: 0.8rem;
+	color: #fff;
+	white-space: nowrap;
+}
+
 @media (max-width: 860px) {
 	.nav-links {
 		order: 3;
