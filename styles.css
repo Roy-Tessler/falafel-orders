@@ -883,6 +883,17 @@ button:active:not(:disabled) {
 	margin-bottom: 12px;
 }
 
+.name-field {
+	display: flex;
+	gap: 8px;
+}
+
+.done-button {
+	flex: 0 0 auto;
+	width: var(--touch);
+	padding: 0;
+}
+
 .split-box {
 	margin-bottom: 12px;
 }

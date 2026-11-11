@@ -1,7 +1,7 @@
 import { addItem, changeQty, removeLine, orderTotal, validateOrder, createOrder } from '../logic/model.js';
 import { validatePayments } from '../logic/payments.js';
 import { h, icon, formatMoney, confirmPanel, showToast, playAnimation, reveal, SAVE_FAILED } from '../dom.js';
-import { emptyDraft, loadDraft, storeDraft, clearDraft } from './draft.js';
+import { emptyDraft, clearStoredDraft } from './draft.js';
 import { paymentChoice, draftPayments } from './paymentChoice.js';
 import { customerPicker } from './customerPicker.js';
 
@@ -29,12 +29,26 @@ function itemGrid(menu, onAdd) {
 	);
 }
 
+function nameControl(state, onChange) {
+	const doneButton = h('button', { class: 'primary done-button', 'aria-label': 'סיום הקלדת השם', onclick: () => nameInput.blur() }, icon('check'));
+	const syncDone = () => { doneButton.disabled = !state.customerName.trim(); };
+	const nameInput = h('input', { placeholder: 'שם הלקוח', value: state.customerName, autocomplete: 'off', enterkeyhint: 'done',
+		oninput: e => { state.customerName = e.target.value; syncDone(); onChange(); },
+		onkeydown: e => { if (e.key === 'Enter') { nameInput.blur(); } } });
+	const setName = name => {
+		nameInput.value = name;
+		state.customerName = name;
+		syncDone();
+	};
+	syncDone();
+	return { nameInput, nameField: h('div', { class: 'name-field' }, nameInput, doneButton), setName };
+}
+
 function buildForm(menu, state, onChange) {
 	const linesBox = h('div', { class: 'order-lines' });
 	const totalBox = h('div', { class: 'big-total' });
 	const errorsBox = h('div', { class: 'error', role: 'alert' });
-	const nameInput = h('input', { placeholder: 'שם הלקוח', value: state.customerName, autocomplete: 'off',
-		oninput: e => { state.customerName = e.target.value; onChange(); } });
+	const { nameInput, nameField, setName } = nameControl(state, onChange);
 	const noteInput = h('input', { placeholder: 'הערה (לא חובה)', value: state.note,
 		oninput: e => { state.note = e.target.value; onChange(); } });
 
@@ -67,13 +81,13 @@ function buildForm(menu, state, onChange) {
 		onChange();
 	});
 	refresh();
-	return { nameInput, noteInput, grid, linesBox, totalBox, errorsBox, refresh };
+	return { nameInput, nameField, setName, noteInput, grid, linesBox, totalBox, errorsBox, refresh };
 }
 
 function layout(title, form, nameExtras, actions) {
 	return h('section', { class: 'order-screen' },
 		h('h1', {}, title),
-		h('div', { class: 'card' }, form.nameInput, nameExtras),
+		h('div', { class: 'card' }, form.nameField, nameExtras),
 		form.grid,
 		h('div', { class: 'card' }, form.linesBox, form.totalBox, form.noteInput),
 		form.errorsBox,
@@ -96,8 +110,7 @@ function newOrderErrors(state) {
 
 function resetForm(state, parts) {
 	Object.assign(state, emptyDraft());
-	clearDraft();
-	parts.form.nameInput.value = '';
+	parts.form.setName('');
 	parts.form.noteInput.value = '';
 	parts.form.refresh();
 	parts.payment.refresh();
@@ -106,16 +119,14 @@ function resetForm(state, parts) {
 }
 
 function renderNew(store, menu, orders) {
-	const state = loadDraft();
+	clearStoredDraft();
+	const state = emptyDraft();
 	const parts = {};
-	const changed = () => {
-		storeDraft(state);
-		parts.payment?.updateRemaining();
-	};
+	const changed = () => parts.payment?.updateRemaining();
 	parts.form = buildForm(menu, state, changed);
 	parts.payment = paymentChoice(state, () => orderTotal(state.lines), changed);
 	parts.picker = customerPicker(orders, menu, {
-		onPick: name => { state.customerName = name; parts.form.nameInput.value = name; changed(); },
+		onPick: name => { parts.form.setName(name); changed(); },
 		onRepeat: lines => { state.lines = lines; parts.form.refresh(); changed(); },
 	});
 	parts.form.nameInput.addEventListener('input', () => parts.picker.update(parts.form.nameInput.value));
@@ -156,7 +167,6 @@ async function saveNew(store, state, parts, saveButton) {
 		const total = orderTotal(state.lines);
 		const order = createOrder({ ...state, payments: draftPayments(state, total) }, new Date(), () => crypto.randomUUID());
 		await store.saveOrder(order);
-		clearDraft();
 		showToast('ההזמנה נשמרה');
 		location.hash = `#/evening/${order.eveningDate}`;
 	} catch (error) {
