@@ -1,4 +1,4 @@
-const CACHE = 'falafel-v25';
+const CACHE = 'falafel-v26';
 const FILES = [
 	'./',
 	'./index.html',
@@ -39,6 +39,8 @@ const FILES = [
 	'./src/ui/menu.js',
 	'./src/ui/stats.js',
 	'./src/ui/backup.js',
+	'./src/logic/expenses.js',
+	'./src/ui/expenses.js',
 ];
 
 self.addEventListener('install', event => {

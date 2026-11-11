@@ -9,6 +9,8 @@ const ROUTES = [
 	{ pattern: /^\/menu$/, module: './ui/menu.js', keys: [] },
 	{ pattern: /^\/stats$/, module: './ui/stats.js', keys: [] },
 	{ pattern: /^\/stats\/(\d{4}-\d{2}-\d{2}|[a-z-]+)$/, module: './ui/stats.js', keys: ['date'] },
+	{ pattern: /^\/expenses$/, module: './ui/expenses.js', keys: [] },
+	{ pattern: /^\/expenses\/([^/]+)$/, module: './ui/expenses.js', keys: ['id'] },
 	{ pattern: /^\/backup$/, module: './ui/backup.js', keys: [] },
 	{ pattern: /^\/demo$/, module: './ui/demo.js', keys: [] },
 ];

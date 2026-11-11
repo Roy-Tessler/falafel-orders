@@ -9,16 +9,18 @@ const order = {
 	lines: [{ itemId: 'm1', name: 'פלאפל בפיתה', price: 20, qty: 2 }, { itemId: 'm2', name: "צ'יפס", price: 12, qty: 1 }],
 };
 
+const expense = { id: 'e1', date: '2026-11-08', shop: 'מאפיית אבי', total: 200, lines: [{ category: 'פיתות', amount: 120 }], createdAt: '2026-11-11T10:00:00.000Z' };
+
 test('backup round-trips', () => {
-	const data = { menu: [menuItem], orders: [order] };
+	const data = { menu: [menuItem], orders: [order], expenses: [expense] };
 	assert.deepEqual(parseBackup(toBackupJson(data, new Date())), data);
 });
 
 test('backup json carries app, version, and exportedAt', () => {
 	const now = new Date('2026-11-06T20:00:00Z');
-	const parsed = JSON.parse(toBackupJson({ menu: [], orders: [] }, now));
+	const parsed = JSON.parse(toBackupJson({ menu: [], orders: [], expenses: [] }, now));
 	assert.equal(parsed.app, 'falafel-orders');
-	assert.equal(parsed.version, 2);
+	assert.equal(parsed.version, 3);
 	assert.equal(parsed.exportedAt, now.toISOString());
 });
 
@@ -27,6 +29,7 @@ const BAD = [
 	'{}',
 	'null',
 	'{"app":"other","version":1,"menu":[],"orders":[]}',
+	'{"app":"falafel-orders","version":4,"menu":[],"orders":[]}',
 	'{"app":"falafel-orders","version":3,"menu":[],"orders":[]}',
 	'{"app":"falafel-orders","version":1,"menu":{},"orders":[]}',
 	'{"app":"falafel-orders","version":1,"menu":[],"orders":[{"id":"x"}]}',
@@ -64,6 +67,9 @@ const BAD_CONTENT = [
 	['menu item with a foreign image', { menu: [{ id: 'm', name: 'x', price: 1, position: 0, active: true, image: 'https://evil.example/x.png' }], orders: [] }],
 	['menu item with fractional price', { menu: [{ id: 'm', name: 'x', price: 1.5, position: 0, active: true }], orders: [] }],
 	['order without customerName', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', lines: [], payments: [] }] }],
+	['expense without a shop', { version: 3, menu: [], orders: [], expenses: [{ ...expense, shop: '' }] }],
+	['expense with a split above its total', { version: 3, menu: [], orders: [], expenses: [{ ...expense, lines: [{ category: 'פיתות', amount: 300 }] }] }],
+	['expense with a foreign category', { version: 3, menu: [], orders: [], expenses: [{ ...expense, lines: [{ category: 'x', amount: 1 }] }] }],
 	['order line without qty', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', customerName: 'x', lines: [{ itemId: 'a', name: 'x', price: 1 }], payments: [] }] }],
 ];
 for (const [label, content] of BAD_CONTENT) {
@@ -79,6 +85,12 @@ test('parseBackup keeps menu items with a photo or no image', () => {
 		{ id: 'b', name: 'y', price: 1, position: 1, active: true },
 	];
 	assert.deepEqual(parseBackup(JSON.stringify({ app: 'falafel-orders', version: 2, menu, orders: [] })).menu, menu);
+});
+
+test('parseBackup restores a version 2 backup with no expenses', () => {
+	const parsed = parseBackup(JSON.stringify({ app: 'falafel-orders', version: 2, menu: [menuItem], orders: [order] }));
+	assert.deepEqual(parsed.expenses, []);
+	assert.deepEqual(parsed.orders, [order]);
 });
 
 test('parseBackup upgrades a version 1 backup to payment lists', () => {

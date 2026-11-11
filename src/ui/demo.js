@@ -4,7 +4,7 @@ import { h, confirmPanel, showToast } from '../dom.js';
 async function replaceOrders(store, makeOrders, message) {
 	const menu = await store.getMenu();
 	try {
-		await store.replaceAll({ menu, orders: makeOrders(menu) });
+		await store.replaceAll({ menu, orders: makeOrders(menu), expenses: await store.getExpenses() });
 	} catch (error) {
 		console.error(error);
 		showToast('הפעולה נכשלה', true);

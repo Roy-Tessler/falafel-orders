@@ -1,5 +1,6 @@
 import { eveningList, eveningSummary, trend, weekdayOf, ordersInPeriod, PERIOD } from '../logic/stats.js';
-import { eveningKey } from '../logic/model.js';
+import { expensesInPeriod, expensesTotal, categoryTotals } from '../logic/expenses.js';
+import { eveningKey, orderTotal } from '../logic/model.js';
 import { h, formatMoney, formatDate, formatShortDate } from '../dom.js';
 
 const LAST_N = 8;
@@ -149,6 +150,24 @@ function trendSection(orders, today, firstDate) {
 	return h('div', { class: 'card' }, h('h2', {}, 'מגמה'), rangeSelect, daySelect, box);
 }
 
+function profitSection(orders, expenses) {
+	const income = orders.reduce((sum, order) => sum + orderTotal(order.lines), 0);
+	const spent = expensesTotal(expenses);
+	const profit = income - spent;
+	return h('div', { class: 'card' },
+		h('h2', {}, 'רווח'),
+		h('div', { class: 'totals row' },
+			stat('הכנסות', formatMoney(income)),
+			stat('הוצאות', formatMoney(spent)),
+			stat('רווח', profit < 0 ? `-${formatMoney(-profit)}` : formatMoney(profit), profit < 0 ? 'unpaid' : 'paid-amount')),
+		expenses.length === 0
+			? h('p', { class: 'muted' }, 'אין קבלות בתקופה הזו. מוסיפים קבלות במסך ', h('a', { href: '#/expenses' }, 'הוצאות'), '.')
+			: h('div', { class: 'table-scroll' }, h('table', {},
+				h('thead', {}, h('tr', {}, h('th', {}, 'סוג הוצאה'), h('th', {}, 'סכום'))),
+				h('tbody', {}, categoryTotals(expenses).map(row => h('tr', {}, h('td', {}, row.category), h('td', {}, formatMoney(row.amount))))))),
+	);
+}
+
 export async function render(store, params) {
 	const orders = await store.getOrders();
 	const evenings = eveningList(orders);
@@ -164,9 +183,11 @@ export async function render(store, params) {
 		h('optgroup', { label: 'תקופה' }, Object.keys(PERIOD_LABELS).map(period => option(period, periodTitle(period, today, firstDate)))),
 		h('optgroup', { label: 'ערב' }, evenings.map(e => option(e.date, formatDate(e.date)))));
 	const shown = isPeriod ? ordersInPeriod(orders, selected, eveningKey(today)) : orders.filter(o => o.eveningDate === selected);
+	const expenses = isPeriod ? expensesInPeriod(await store.getExpenses(), selected, eveningKey(today)) : null;
 	return h('section', {},
 		h('h1', {}, 'נתונים'),
 		h('div', { class: 'card' }, picker),
+		isPeriod ? profitSection(shown, expenses) : null,
 		shown.length > 0 ? eveningSection(shown) : h('p', { class: 'muted' }, 'אין הזמנות בתקופה הזו'),
 		trendSection(orders, today, firstDate),
 	);

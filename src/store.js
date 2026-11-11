@@ -2,7 +2,7 @@ import { DEFAULT_MENU } from './logic/model.js';
 import { upgradeOrder } from './logic/payments.js';
 
 const DB_NAME = 'falafel-orders';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 function promisify(request) {
 	return new Promise((resolve, reject) => {
@@ -41,10 +41,11 @@ function upgradePayments(tx) {
 function upgrade(request, oldVersion) {
 	if (oldVersion < 1) {
 		createStores(request.result);
-		return;
-	}
-	if (oldVersion < 2) {
+	} else if (oldVersion < 2) {
 		upgradePayments(request.transaction);
+	}
+	if (oldVersion < 3) {
+		request.result.createObjectStore('expenses', { keyPath: 'id' });
 	}
 }
 
@@ -96,6 +97,24 @@ class Store {
 		return done(tx);
 	}
 
+	async getExpenses() {
+		return this.getAll('expenses');
+	}
+
+	async getExpense(id) {
+		return promisify(this.m_db.transaction('expenses').objectStore('expenses').get(id));
+	}
+
+	async saveExpense(expense) {
+		return this.put('expenses', expense);
+	}
+
+	async deleteExpense(id) {
+		const tx = this.m_db.transaction('expenses', 'readwrite');
+		tx.objectStore('expenses').delete(id);
+		return done(tx);
+	}
+
 	async getMeta(key) {
 		const row = await promisify(this.m_db.transaction('meta').objectStore('meta').get(key));
 		return row ? row.value : undefined;
@@ -106,15 +125,18 @@ class Store {
 	}
 
 	async replaceAll(data) {
-		const tx = this.m_db.transaction(['menu', 'orders'], 'readwrite');
+		const tx = this.m_db.transaction(['menu', 'orders', 'expenses'], 'readwrite');
 		const menu = tx.objectStore('menu');
 		const orders = tx.objectStore('orders');
+		const expenses = tx.objectStore('expenses');
 		const finished = done(tx);
 		try {
 			menu.clear();
 			orders.clear();
+			expenses.clear();
 			data.menu.forEach(item => menu.put(item));
 			data.orders.forEach(order => orders.put(order));
+			data.expenses.forEach(expense => expenses.put(expense));
 		} catch (error) {
 			tx.abort();
 			await finished.catch(() => {});

@@ -1,9 +1,10 @@
 import { orderTotal, isValidImage } from './model.js';
 import { METHOD, isMethod, remainingAmount, upgradeOrder } from './payments.js';
+import { validateExpense } from './expenses.js';
 
 const APP_ID = 'falafel-orders';
-const BACKUP_VERSION = 2;
-const SUPPORTED_VERSIONS = [1, 2];
+const BACKUP_VERSION = 3;
+const SUPPORTED_VERSIONS = [1, 2, 3];
 const INVALID_MESSAGE = 'הקובץ אינו גיבוי תקין';
 const REMINDER_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -25,6 +26,7 @@ export function toBackupJson(data, now) {
 		exportedAt: now.toISOString(),
 		menu: data.menu,
 		orders: data.orders,
+		expenses: data.expenses,
 	});
 }
 
@@ -75,6 +77,21 @@ function isValidOrder(order) {
 		&& order.payments.every(isValidPayment);
 }
 
+function isValidExpense(expense) {
+	return isObject(expense)
+		&& typeof expense.id === 'string'
+		&& typeof expense.date === 'string'
+		&& typeof expense.shop === 'string'
+		&& typeof expense.createdAt === 'string'
+		&& Array.isArray(expense.lines)
+		&& expense.lines.every(isObject)
+		&& validateExpense(expense).length === 0;
+}
+
+function expensesOf(data) {
+	return data.version >= 3 ? data.expenses : [];
+}
+
 export function parseBackup(text) {
 	let data;
 	try {
@@ -87,15 +104,17 @@ export function parseBackup(text) {
 		&& SUPPORTED_VERSIONS.includes(data.version)
 		&& Array.isArray(data.menu)
 		&& Array.isArray(data.orders)
-		&& data.orders.every(isObject);
+		&& data.orders.every(isObject)
+		&& Array.isArray(expensesOf(data));
 	if (!shapeOk) {
 		throw new BackupError();
 	}
 	const orders = data.version === 1 ? data.orders.map(upgradeOrder) : data.orders;
-	if (!data.menu.every(isValidMenuItem) || !orders.every(isValidOrder)) {
+	const expenses = expensesOf(data);
+	if (!data.menu.every(isValidMenuItem) || !orders.every(isValidOrder) || !expenses.every(isValidExpense)) {
 		throw new BackupError();
 	}
-	return { menu: data.menu, orders };
+	return { menu: data.menu, orders, expenses };
 }
 
 function csvCell(value) {

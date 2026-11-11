@@ -25,7 +25,7 @@ async function exportFile(store, kind) {
 	const now = new Date();
 	const orders = await store.getOrders();
 	if (kind === 'json') {
-		download(`falafel-backup-${eveningKey(now)}.json`, toBackupJson({ menu: await store.getMenu(), orders }, now), 'application/json');
+		download(`falafel-backup-${eveningKey(now)}.json`, toBackupJson({ menu: await store.getMenu(), orders, expenses: await store.getExpenses() }, now), 'application/json');
 		await store.setMeta('lastExportAt', now.toISOString());
 	} else {
 		download(`falafel-orders-${eveningKey(now)}.csv`, ordersToCsv(orders), 'text/csv;charset=utf-8');
@@ -50,7 +50,7 @@ function restoreControl(store, messageBox, onDone) {
 			return;
 		}
 		messageBox.replaceChildren(confirmPanel(
-			`השחזור יחליף את כל הנתונים במכשיר ב-${data.orders.length} הזמנות מהקובץ. להמשיך?`, 'כן',
+			`השחזור יחליף את כל הנתונים במכשיר ב-${data.orders.length} הזמנות ו-${data.expenses.length} קבלות מהקובץ. להמשיך?`, 'כן',
 			async () => {
 				try {
 					await store.replaceAll(data);

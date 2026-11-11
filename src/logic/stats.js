@@ -127,9 +127,13 @@ function periodBounds(period, todayKey) {
 	}
 }
 
-export function ordersInPeriod(orders, period, todayKey) {
+export function isInPeriod(dateKey, period, todayKey) {
 	const [from, to] = periodBounds(period, todayKey);
-	return orders.filter(o => o.eveningDate >= from && o.eveningDate <= to);
+	return dateKey >= from && dateKey <= to;
+}
+
+export function ordersInPeriod(orders, period, todayKey) {
+	return orders.filter(o => isInPeriod(o.eveningDate, period, todayKey));
 }
 
 export function unpaidByEvening(orders) {
