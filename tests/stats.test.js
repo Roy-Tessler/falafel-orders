@@ -46,6 +46,15 @@ test('eveningSummary splits payments and ranks items', () => {
 	assert.deepEqual(s.byHalfHour, [{ label: '19:00', count: 1 }, { label: '19:30', count: 1 }, { label: '20:00', count: 1 }]);
 });
 
+test('eveningSummary counts falafel balls: 5 per portion, 3 per half, 6 per hummus plate', () => {
+	const orders = [
+		o('2026-11-06', 19, 0, 'cash', [L('p', 'מנה פלאפל', 25, 2), L('h', 'חצי מנה', 12, 1)]),
+		o('2026-11-06', 19, 5, 'unpaid', [L('u', 'צלחת חומוס עם פלאפל וסלט', 28, 1), FRIES(3)]),
+	];
+	assert.equal(eveningSummary(orders).falafelBalls, 19);
+	assert.equal(eveningSummary([o('2026-11-06', 19, 0, 'cash', [DRINK(2)])]).falafelBalls, 0);
+});
+
 test('byHalfHour includes empty slots between orders', () => {
 	const s = eveningSummary([o('2026-11-06', 19, 0, 'paybox', [FALAFEL(1)]), o('2026-11-06', 20, 10, 'paybox', [FALAFEL(1)])]);
 	assert.deepEqual(s.byHalfHour, [{ label: '19:00', count: 1 }, { label: '19:30', count: 0 }, { label: '20:00', count: 1 }]);

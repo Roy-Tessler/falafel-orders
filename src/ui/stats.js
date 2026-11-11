@@ -27,6 +27,7 @@ function eveningSection(orders) {
 			stat('פייבוקס', formatMoney(s.paidPaybox), 'paid-amount'),
 			stat('מזומן', formatMoney(s.paidCash), 'paid-amount'),
 			stat('לא שולם', formatMoney(s.unpaid), s.unpaid > 0 ? 'unpaid' : ''),
+			stat('כדורי פלאפל', String(s.falafelBalls)),
 		),
 		h('div', { class: 'card table-scroll' }, h('table', {},
 			h('thead', {}, h('tr', {}, h('th', {}, 'פריט'), h('th', {}, 'כמות'), h('th', {}, 'סכום'))),

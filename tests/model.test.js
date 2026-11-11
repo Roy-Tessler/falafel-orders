@@ -8,9 +8,9 @@ import {
 
 test('DEFAULT_MENU has the real menu', () => {
 	assert.deepEqual(DEFAULT_MENU, [
-		{ name: 'מנה פלאפל', price: 25, image: 'images/falafel.svg' },
-		{ name: 'חצי מנה', price: 12, image: 'images/half.svg' },
-		{ name: 'צלחת חומוס עם פלאפל וסלט', price: 28, image: 'images/hummus.svg' },
+		{ name: 'מנה פלאפל', price: 25, image: 'images/falafel.svg', balls: 5 },
+		{ name: 'חצי מנה', price: 12, image: 'images/half.svg', balls: 3 },
+		{ name: 'צלחת חומוס עם פלאפל וסלט', price: 28, image: 'images/hummus.svg', balls: 6 },
 		{ name: 'נקניקיה בלחמניה', price: 15, image: 'images/hotdog.svg' },
 		{ name: "צ'יפס", price: 15, image: 'images/fries.svg' },
 		{ name: 'מלבי', price: 10, image: 'images/malabi.svg' },

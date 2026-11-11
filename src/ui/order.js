@@ -1,6 +1,6 @@
 import { addItem, changeQty, removeLine, orderTotal, validateOrder, createOrder } from '../logic/model.js';
 import { validatePayments } from '../logic/payments.js';
-import { h, icon, formatMoney, confirmPanel, showToast, playAnimation, SAVE_FAILED } from '../dom.js';
+import { h, icon, formatMoney, confirmPanel, showToast, playAnimation, reveal, SAVE_FAILED } from '../dom.js';
 import { emptyDraft, loadDraft, storeDraft, clearDraft } from './draft.js';
 import { paymentChoice, draftPayments } from './paymentChoice.js';
 import { customerPicker } from './customerPicker.js';
@@ -83,6 +83,9 @@ function layout(title, form, nameExtras, actions) {
 
 function showErrors(form, errors) {
 	form.errorsBox.replaceChildren(...errors.map(message => h('div', {}, message)));
+	if (errors.length > 0) {
+		reveal(form.errorsBox);
+	}
 	return errors.length === 0;
 }
 

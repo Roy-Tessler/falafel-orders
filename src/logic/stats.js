@@ -1,7 +1,12 @@
-import { orderTotal } from './model.js';
+import { orderTotal, DEFAULT_MENU } from './model.js';
 import { METHOD, paidBy, paidAmount, remainingAmount } from './payments.js';
 
 const SLOT_MINUTES = 30;
+const BALLS_BY_NAME = new Map(DEFAULT_MENU.filter(item => item.balls).map(item => [item.name, item.balls]));
+
+function falafelBalls(order) {
+	return order.lines.reduce((sum, line) => sum + (BALLS_BY_NAME.get(line.name) || 0) * line.qty, 0);
+}
 
 function byDateDesc(a, b) {
 	return b.localeCompare(a);
@@ -89,6 +94,7 @@ export function eveningSummary(orders) {
 		paidCash: sumOf(orders, o => paidBy(o, METHOD.CASH)),
 		paidTotal: sumOf(orders, paidAmount),
 		unpaid: sumOf(orders, remainingAmount),
+		falafelBalls: sumOf(orders, falafelBalls),
 		items: itemTotals(orders),
 		byHalfHour: halfHourCounts(orders),
 	};

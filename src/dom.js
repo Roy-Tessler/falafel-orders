@@ -76,7 +76,16 @@ export function confirmPanel(message, yesLabel, onYes, onNo) {
 			h('button', { onclick: () => { panel.remove(); if (onNo) { onNo(); } } }, 'ביטול'),
 		),
 	);
+	queueMicrotask(() => reveal(panel));
 	return panel;
+}
+
+export function reveal(el) {
+	if (!el.isConnected) {
+		return;
+	}
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	el.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
 }
 
 export function playAnimation(el, className) {
