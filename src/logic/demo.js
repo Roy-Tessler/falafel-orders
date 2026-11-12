@@ -14,8 +14,7 @@ const PARTIAL_CHANCE = 0.3;
 const ITEM_CHANCES = [0.85, 0.45, 0.5, 0.25, 0.15];
 const OTHER_ITEM_CHANCE = 0.2;
 const SMALL_ITEM_PRICE = 5;
-const FIRST_NAMES = ['דנה', 'יוסי', 'רונית', 'משה', 'מיכל', 'אבי', 'שירה', 'עומר', 'נועה', 'איתי', 'טל', 'רחל', 'דוד', 'מאיה', 'אורי', 'יעל', 'גיל', 'הדס', 'אלון', 'ליאת'];
-const LAST_NAMES = ['כהן', 'לוי', 'מזרחי', 'פרץ', 'ביטון', 'אברהם', 'פרידמן', 'שפירא', 'אזולאי', 'דהן', 'גולן', 'ברק', 'חדד', 'אוחיון', 'רוזן'];
+const CUSTOMER_NAMES = ['איציק הרוש', 'שלומית הרוש', 'ארז הרוש', 'תמר הרוש', 'דפנה זק', 'תום זק', 'אסיה זק', 'אודם זק', 'אלנה טסלר', 'רועי טסלר', 'יהלי טסלר', "ג'ייסון טסלר", 'שגיא טסלר', 'נעמה גרופר', 'מוטי בוארון', 'שגיא מיימון', 'אסתר הרוש', 'מרלה'];
 const NOTES = ['בלי חריף', 'בלי טחינה', 'הרבה סלט', 'חריף בצד'];
 
 export function seededRandom(seed) {
@@ -84,7 +83,7 @@ function demoOrder(menu, createdAt, eveningDate, unpaidChance, now, random) {
 		id: `demo-${eveningDate}-${createdAt.getTime()}-${Math.floor(random() * 1e9)}`,
 		eveningDate,
 		createdAt: createdAt.toISOString(),
-		customerName: `${pick(FIRST_NAMES, random)} ${pick(LAST_NAMES, random)}`,
+		customerName: pick(CUSTOMER_NAMES, random),
 		note: random() < 0.15 ? pick(NOTES, random) : '',
 		lines,
 		payments: demoPayments(orderTotal(lines), createdAt, unpaidChance, now, random),
