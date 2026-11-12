@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateDemoOrders, seededRandom } from '../src/logic/demo.js';
+import { generateDemoOrders, generateDemoExpenses, seededRandom } from '../src/logic/demo.js';
+import { validateExpense, unsplitAmount } from '../src/logic/expenses.js';
 import { validateOrder, eveningKey, orderTotal } from '../src/logic/model.js';
 import { paymentStatus, paidBy, validatePayments } from '../src/logic/payments.js';
 import { weekdayOf } from '../src/logic/stats.js';
@@ -61,4 +62,25 @@ test('demo has busy evenings and realistic payments', () => {
 	assert.ok(paidOld > 0.8, String(paidOld));
 	assert.ok(orders.every(o => validatePayments(o.payments, orderTotal(o.lines)).length === 0));
 	assert.ok(orders.every(o => orderTotal(o.lines) > 0));
+});
+
+test('demo expenses are valid receipts on the demo evenings', () => {
+	const expenses = generateDemoExpenses(NOW, seededRandom(4));
+	const orderDates = new Set(generateDemoOrders(MENU, NOW, seededRandom(4)).map(o => o.eveningDate));
+	assert.ok(expenses.length > 0);
+	for (const expense of expenses) {
+		assert.deepEqual(validateExpense(expense), []);
+		assert.ok(orderDates.has(expense.date), expense.date);
+		assert.ok(new Date(expense.createdAt) <= NOW);
+	}
+	assert.equal(new Set(expenses.map(e => e.id)).size, expenses.length);
+	assert.ok(expenses.some(e => e.date === eveningKey(NOW)));
+	assert.ok(expenses.some(e => unsplitAmount(e) > 0));
+});
+
+test('demo expenses leave a profit', () => {
+	const random = seededRandom(5);
+	const income = generateDemoOrders(MENU, NOW, random).reduce((sum, o) => sum + orderTotal(o.lines), 0);
+	const spent = generateDemoExpenses(NOW, random).reduce((sum, e) => sum + e.total, 0);
+	assert.ok(spent > income * 0.2 && spent < income * 0.7, `${spent} of ${income}`);
 });

@@ -1,4 +1,4 @@
-const CACHE = 'falafel-v28';
+const CACHE = 'falafel-v29';
 const FILES = [
 	'./',
 	'./index.html',

@@ -16,6 +16,15 @@ const OTHER_ITEM_CHANCE = 0.2;
 const SMALL_ITEM_PRICE = 5;
 const CUSTOMER_NAMES = ['איציק הרוש', 'שלומית הרוש', 'ארז הרוש', 'תמר הרוש', 'דפנה זק', 'תום זק', 'אסיה זק', 'אודם זק', 'אלנה טסלר', 'רועי טסלר', 'יהלי טסלר', "ג'ייסון טסלר", 'שגיא טסלר', 'נעמה גרופר', 'מוטי בוארון', 'שגיא מיימון', 'אסתר הרוש', 'מרלה'];
 const NOTES = ['בלי חריף', 'בלי טחינה', 'הרבה סלט', 'חריף בצד'];
+const RECEIPT_HOUR = 10;
+const RECEIPTS = [
+	{ shop: 'מאפיית השכונה', every: 1, lines: [['פיתות', 70, 130]] },
+	{ shop: 'ירקות השוק', every: 1, lines: [['ירקות', 60, 140]], extra: [10, 40] },
+	{ shop: 'סיטונאות המרכז', every: 2, lines: [['שמן', 50, 90], ['חומוס וטחינה', 80, 150], ['אריזות', 30, 60]] },
+	{ shop: 'מחסן משקאות', every: 2, offset: 1, lines: [['שתייה', 90, 160]] },
+	{ shop: 'בשר הגליל', every: 3, lines: [['בשר ונקניקיות', 80, 140]] },
+	{ shop: 'חלוקת גז', every: 5, lines: [['גז', 120, 160]] },
+];
 
 export function seededRandom(seed) {
 	let state = seed >>> 0;
@@ -109,6 +118,32 @@ function todayOrders(menu, now, random) {
 		orders.push(demoOrder(menu, createdAt, eveningKey(now), UNPAID_CHANCE.today, now, random));
 	}
 	return orders;
+}
+
+function amountBetween(min, max, random) {
+	return min + Math.floor(random() * (max - min + 1));
+}
+
+function demoReceipt(template, day, now, random) {
+	const lines = template.lines.map(([category, min, max]) => ({ category, amount: amountBetween(min, max, random) }));
+	const extra = template.extra ? amountBetween(template.extra[0], template.extra[1], random) : 0;
+	const createdAt = new Date(day.getTime() + (RECEIPT_HOUR * 60 + Math.floor(random() * 120)) * MINUTE_MS);
+	return {
+		id: `demo-expense-${eveningKey(day)}-${Math.floor(random() * 1e9)}`,
+		date: eveningKey(day),
+		shop: template.shop,
+		total: lines.reduce((sum, line) => sum + line.amount, 0) + extra,
+		lines,
+		createdAt: new Date(Math.min(now.getTime(), createdAt.getTime())).toISOString(),
+	};
+}
+
+export function generateDemoExpenses(now, random) {
+	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+	const days = [...pastEvenings(now), today];
+	return days.flatMap((day, index) => RECEIPTS
+		.filter(template => (index + (template.offset || 0)) % template.every === 0)
+		.map(template => demoReceipt(template, day, now, random)));
 }
 
 export function generateDemoOrders(menu, now, random) {
