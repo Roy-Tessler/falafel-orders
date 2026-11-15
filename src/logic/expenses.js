@@ -1,7 +1,12 @@
 import { isInPeriod } from './stats.js';
 
 export const OTHER_CATEGORY = 'שונות';
-export const EXPENSE_CATEGORIES = Object.freeze(['פיתות', 'שמן', 'ירקות', 'חומוס וטחינה', 'בשר ונקניקיות', 'שתייה', 'גז', 'אריזות', OTHER_CATEGORY]);
+export const MAX_CATEGORY_LENGTH = 30;
+export const EXPENSE_CATEGORIES = Object.freeze([
+	'פיתות', 'לחמניות', 'שמן', 'ירקות', 'חומוס גרגירים', 'חומוס ממרח', 'חומוס וטחינה', "צ'יפס",
+	'פח חמוצים', 'פח כרוב כבוש', 'נקניקיות', 'בשר ונקניקיות', 'שתייה', 'קרטון שתייה', 'גז', 'אריזות',
+	OTHER_CATEGORY,
+]);
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -13,13 +18,33 @@ function splitSum(expense) {
 	return expense.lines.reduce((sum, line) => sum + line.amount, 0);
 }
 
+function isFilledText(value) {
+	return typeof value === 'string' && value.trim() !== '';
+}
+
+export function categoryList(customCategories) {
+	const custom = customCategories.filter(category => !EXPENSE_CATEGORIES.includes(category));
+	return [...EXPENSE_CATEGORIES.slice(0, -1), ...custom, OTHER_CATEGORY];
+}
+
+export function withCategory(customCategories, name) {
+	const category = String(name).trim();
+	const known = categoryList(customCategories).includes(category);
+	if (category === '' || category.length > MAX_CATEGORY_LENGTH || known) {
+		return customCategories;
+	}
+	return [...customCategories, category];
+}
+
 function lineErrors(lines) {
 	const errors = [];
 	if (!lines.every(line => isPositiveWhole(line.amount))) {
 		errors.push('כל סכום בפירוט חייב להיות מספר שלם גדול מ-0');
 	}
-	if (!lines.every(line => EXPENSE_CATEGORIES.includes(line.category))) {
-		errors.push('קטגוריה לא מוכרת');
+	if (!lines.every(line => isFilledText(line.category))) {
+		errors.push('חסר סוג בפירוט');
+	} else if (!lines.every(line => line.category.length <= MAX_CATEGORY_LENGTH)) {
+		errors.push('שם הסוג ארוך מדי');
 	}
 	return errors;
 }

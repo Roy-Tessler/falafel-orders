@@ -69,7 +69,8 @@ const BAD_CONTENT = [
 	['order without customerName', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', lines: [], payments: [] }] }],
 	['expense without a shop', { version: 3, menu: [], orders: [], expenses: [{ ...expense, shop: '' }] }],
 	['expense with a split above its total', { version: 3, menu: [], orders: [], expenses: [{ ...expense, lines: [{ category: 'פיתות', amount: 300 }] }] }],
-	['expense with a foreign category', { version: 3, menu: [], orders: [], expenses: [{ ...expense, lines: [{ category: 'x', amount: 1 }] }] }],
+	['expense with an empty category', { version: 3, menu: [], orders: [], expenses: [{ ...expense, lines: [{ category: '', amount: 1 }] }] }],
+	['expense with a non-text category', { version: 3, menu: [], orders: [], expenses: [{ ...expense, lines: [{ category: 7, amount: 1 }] }] }],
 	['order line without qty', { menu: [], orders: [{ id: 'o', eveningDate: '2026-11-06', createdAt: '2026-11-06T18:00:00.000Z', customerName: 'x', lines: [{ itemId: 'a', name: 'x', price: 1 }], payments: [] }] }],
 ];
 for (const [label, content] of BAD_CONTENT) {

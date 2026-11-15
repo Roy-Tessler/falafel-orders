@@ -3,6 +3,7 @@ import { upgradeOrder } from './logic/payments.js';
 
 const DB_NAME = 'falafel-orders';
 const DB_VERSION = 3;
+const EXPENSE_CATEGORIES_KEY = 'expenseCategories';
 
 function promisify(request) {
 	return new Promise((resolve, reject) => {
@@ -113,6 +114,14 @@ class Store {
 		const tx = this.m_db.transaction('expenses', 'readwrite');
 		tx.objectStore('expenses').delete(id);
 		return done(tx);
+	}
+
+	async getExpenseCategories() {
+		return (await this.getMeta(EXPENSE_CATEGORIES_KEY)) || [];
+	}
+
+	async saveExpenseCategories(categories) {
+		return this.setMeta(EXPENSE_CATEGORIES_KEY, categories);
 	}
 
 	async getMeta(key) {

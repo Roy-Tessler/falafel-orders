@@ -910,6 +910,18 @@ button:active:not(:disabled) {
 	margin-bottom: 0;
 }
 
+.split-free {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 8px;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.split-free input {
+	margin-bottom: 0;
+}
+
 .receipt-row {
 	display: flex;
 	align-items: center;
