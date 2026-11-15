@@ -1,4 +1,4 @@
-import { validateMenuItem } from '../logic/model.js';
+import { validateMenuItem, BUNDLED_IMAGES } from '../logic/model.js';
 import { h, setChildren, confirmPanel, showToast, SAVE_FAILED } from '../dom.js';
 import { photoToDataUrl } from '../photo.js';
 
@@ -17,8 +17,15 @@ function withImage(item, image) {
 	return copy;
 }
 
+function bundledPicker(current, onPick) {
+	return h('div', { class: 'bundled-picker', role: 'group', 'aria-label': 'תמונות מקוריות' },
+		BUNDLED_IMAGES.map(image => h('button', { class: 'bundled-choice', 'aria-pressed': String(image === current), onclick: () => onPick(image) },
+			h('img', { src: image, alt: '' }))));
+}
+
 function imageControl(store, item) {
 	const box = h('div', { class: 'image-control' });
+	let pickerOpen = false;
 	async function setImage(image) {
 		const candidate = withImage(item, image);
 		try {
@@ -30,6 +37,7 @@ function imageControl(store, item) {
 		}
 		delete item.image;
 		Object.assign(item, candidate);
+		pickerOpen = false;
 		refresh();
 	}
 	const input = h('input', { type: 'file', accept: 'image/*', class: 'file-input', onchange: async e => {
@@ -49,7 +57,9 @@ function imageControl(store, item) {
 		setChildren(box,
 			item.image ? h('img', { class: 'menu-thumb', src: item.image, alt: '' }) : h('div', { class: 'menu-thumb empty' }),
 			h('label', { class: 'button small' }, item.image ? 'החלף תמונה' : 'הוסף תמונה', input),
+			h('button', { class: 'small', 'aria-expanded': String(pickerOpen), onclick: () => { pickerOpen = !pickerOpen; refresh(); } }, 'תמונה מקורית'),
 			item.image ? h('button', { class: 'small', onclick: () => setImage(undefined) }, 'הסר תמונה') : null,
+			pickerOpen ? bundledPicker(item.image, setImage) : null,
 		);
 	}
 	refresh();

@@ -10,6 +10,8 @@ export const DEFAULT_MENU = Object.freeze([
 	{ name: 'פחית שתייה', price: 10, image: 'images/drink.svg' },
 ]);
 
+export const BUNDLED_IMAGES = Object.freeze(DEFAULT_MENU.map(item => item.image));
+
 const BUNDLED_IMAGE = /^images\/[a-z0-9-]+\.svg$/;
 const PHOTO_IMAGE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
 

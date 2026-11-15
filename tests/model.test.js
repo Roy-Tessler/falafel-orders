@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import {
-	DEFAULT_MENU, eveningKey, addItem, changeQty, orderTotal,
+	DEFAULT_MENU, BUNDLED_IMAGES, eveningKey, addItem, changeQty, orderTotal,
 	validateOrder, createOrder, validateMenuItem, isValidImage, orderSummary, removeLine,
 } from '../src/logic/model.js';
 
@@ -123,4 +123,10 @@ test('removeLine drops the whole line whatever its quantity', () => {
 	assert.deepEqual(removeLine(lines, 'a'), [lines[1]]);
 	assert.equal(lines.length, 2);
 	assert.deepEqual(removeLine(lines, 'missing'), lines);
+});
+
+test('BUNDLED_IMAGES lists each default menu picture once, and each is a valid image', () => {
+	assert.deepEqual(BUNDLED_IMAGES, DEFAULT_MENU.map(item => item.image));
+	assert.equal(new Set(BUNDLED_IMAGES).size, BUNDLED_IMAGES.length);
+	BUNDLED_IMAGES.forEach(image => assert.equal(isValidImage(image), true, image));
 });

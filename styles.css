@@ -593,6 +593,32 @@ select {
 	background: #f1e8da;
 }
 
+.bundled-picker {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	width: 100%;
+}
+
+.bundled-choice {
+	width: 64px;
+	height: 64px;
+	padding: 4px;
+	border: 2px solid var(--border);
+	border-radius: 12px;
+	background: #fff;
+}
+
+.bundled-choice[aria-pressed="true"] {
+	border-color: var(--primary);
+}
+
+.bundled-choice img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
 .font-choice[aria-pressed="true"] {
 	background: var(--primary);
 	border-color: var(--primary);
