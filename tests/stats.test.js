@@ -33,25 +33,27 @@ test('eveningSummary splits payments and ranks items', () => {
 		o('2026-11-06', 19, 10, 'paybox', [FALAFEL(2)]),
 		o('2026-11-06', 19, 40, 'cash', [FRIES(1), FALAFEL(1)]),
 		o('2026-11-06', 20, 20, 'unpaid', [DRINK(3)]),
+		o('2026-11-06', 20, 25, 'bit', [FRIES(1)]),
 	];
 	const s = eveningSummary(orders);
-	assert.equal(s.orderCount, 3);
-	assert.equal(s.total, 93);
-	assert.equal(s.average, 31);
+	assert.equal(s.orderCount, 4);
+	assert.equal(s.total, 105);
+	assert.equal(s.average, 26);
 	assert.equal(s.paidPaybox, 40);
-	assert.equal(s.paidTotal, 72);
+	assert.equal(s.paidBit, 12);
+	assert.equal(s.paidTotal, 84);
 	assert.equal(s.paidCash, 32);
 	assert.equal(s.unpaid, 21);
-	assert.deepEqual(s.items.map(i => [i.name, i.qty, i.amount]), [['פלאפל', 3, 60], ['שתייה', 3, 21], ["צ'יפס", 1, 12]]);
-	assert.deepEqual(s.byHalfHour, [{ label: '19:00', count: 1 }, { label: '19:30', count: 1 }, { label: '20:00', count: 1 }]);
+	assert.deepEqual(s.items.map(i => [i.name, i.qty, i.amount]), [['פלאפל', 3, 60], ['שתייה', 3, 21], ["צ'יפס", 2, 24]]);
+	assert.deepEqual(s.byHalfHour, [{ label: '19:00', count: 1 }, { label: '19:30', count: 1 }, { label: '20:00', count: 2 }]);
 });
 
-test('eveningSummary counts falafel balls: 5 per portion, 3 per half, 6 per hummus plate', () => {
+test('eveningSummary counts falafel balls: 5 per portion, 3 per half, 6 per hummus plate, 1 per single ball', () => {
 	const orders = [
 		o('2026-11-06', 19, 0, 'cash', [L('p', 'מנה פלאפל', 25, 2), L('h', 'חצי מנה', 12, 1)]),
-		o('2026-11-06', 19, 5, 'unpaid', [L('u', 'צלחת חומוס עם פלאפל וסלט', 28, 1), FRIES(3)]),
+		o('2026-11-06', 19, 5, 'unpaid', [L('u', 'צלחת חומוס עם פלאפל וסלט', 28, 1), L('k', 'כדור פלאפל', 2, 4), FRIES(3)]),
 	];
-	assert.equal(eveningSummary(orders).falafelBalls, 19);
+	assert.equal(eveningSummary(orders).falafelBalls, 23);
 	assert.equal(eveningSummary([o('2026-11-06', 19, 0, 'cash', [DRINK(2)])]).falafelBalls, 0);
 });
 

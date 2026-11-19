@@ -1,4 +1,5 @@
-export const METHOD = Object.freeze({ PAYBOX: 'paybox', CASH: 'cash' });
+export const METHOD = Object.freeze({ PAYBOX: 'paybox', BIT: 'bit', CASH: 'cash' });
+export const METHOD_LABELS = Object.freeze({ [METHOD.PAYBOX]: 'פייבוקס', [METHOD.BIT]: 'ביט', [METHOD.CASH]: 'מזומן' });
 export const STATUS = Object.freeze({ UNPAID: 'unpaid', PARTIAL: 'partial', PAID: 'paid' });
 
 const METHOD_VALUES = Object.values(METHOD);

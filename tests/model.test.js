@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import {
-	DEFAULT_MENU, BUNDLED_IMAGES, eveningKey, addItem, changeQty, orderTotal,
+	DEFAULT_MENU, BUNDLED_IMAGES, customItem, isCustomLine, eveningKey, addItem, changeQty, orderTotal,
 	validateOrder, createOrder, validateMenuItem, isValidImage, orderSummary, removeLine,
 } from '../src/logic/model.js';
 
@@ -11,6 +11,7 @@ test('DEFAULT_MENU has the real menu', () => {
 		{ name: 'מנה פלאפל', price: 25, image: 'images/falafel.svg', balls: 5 },
 		{ name: 'חצי מנה', price: 12, image: 'images/half.svg', balls: 3 },
 		{ name: 'צלחת חומוס עם פלאפל וסלט', price: 28, image: 'images/hummus.svg', balls: 6 },
+		{ name: 'כדור פלאפל', price: 2, image: 'images/ball.svg', balls: 1 },
 		{ name: 'נקניקיה בלחמניה', price: 15, image: 'images/hotdog.svg' },
 		{ name: "צ'יפס", price: 15, image: 'images/fries.svg' },
 		{ name: 'מלבי', price: 10, image: 'images/malabi.svg' },
@@ -24,6 +25,17 @@ test('every DEFAULT_MENU image exists and is cached for offline use', () => {
 		assert.ok(existsSync(new URL(`../${item.image}`, import.meta.url)), item.image);
 		assert.ok(serviceWorker.includes(`'./${item.image}'`), item.image);
 	}
+});
+
+test('customItem makes a separate order line with its own name and price', () => {
+	let n = 0;
+	const newId = () => String(++n);
+	const first = customItem('  פיתה ריקה ', 4, newId);
+	assert.deepEqual(first, { id: 'custom-1', name: 'פיתה ריקה', price: 4 });
+	const lines = addItem(addItem([], first), customItem('פיתה ריקה', 4, newId));
+	assert.equal(lines.length, 2);
+	assert.ok(lines.every(isCustomLine));
+	assert.equal(isCustomLine({ itemId: 'a1b2' }), false);
 });
 
 test('eveningKey uses local date, and 00:05 belongs to the new day', () => {

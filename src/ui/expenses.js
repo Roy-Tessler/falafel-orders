@@ -1,9 +1,9 @@
-import { EXPENSE_CATEGORIES, categoryList, withCategory, MAX_CATEGORY_LENGTH, validateExpense, unsplitAmount, expensesTotal } from '../logic/expenses.js';
+import { EXPENSE_CATEGORIES, categoryList, withCategory, MAX_CATEGORY_LENGTH, validateExpense, unsplitAmount, expensesTotal, shopSuggestions, newestExpenseFirst } from '../logic/expenses.js';
 import { eveningKey } from '../logic/model.js';
-import { h, icon, formatMoney, formatShortDate, confirmPanel, showToast, reveal, SAVE_FAILED } from '../dom.js';
+import { h, icon, setChildren, formatMoney, formatShortDate, confirmPanel, showToast, reveal, SAVE_FAILED } from '../dom.js';
 
 const MONTH_FORMAT = new Intl.DateTimeFormat('he-IL', { month: 'long', year: 'numeric' });
-const SHOP_LIST_ID = 'shop-list';
+const MAX_SHOP_SUGGESTIONS = 6;
 const FREE_TEXT = '__free-text__';
 
 function parseAmount(text) {
@@ -98,14 +98,30 @@ function splitBox(form, categories) {
 	return { element: h('div', { class: 'split-box' }, rows, add, leftover), refresh: updateLeftover };
 }
 
-function receiptForm(form, shops, categories) {
+function shopField(form, expenses) {
+	const chips = h('div', { class: 'chips' });
+	const input = h('input', { value: form.shop, autocomplete: 'off', oninput: e => { form.shop = e.target.value; update(); } });
+	function update() {
+		setChildren(chips, shopSuggestions(expenses, form.shop, MAX_SHOP_SUGGESTIONS).map(shop => h('button', {
+			class: 'customer-chip',
+			onclick: () => {
+				input.value = shop;
+				form.shop = shop;
+				update();
+			},
+		}, shop)));
+	}
+	update();
+	return h('div', {}, input, chips);
+}
+
+function receiptForm(form, expenses, categories) {
 	const errors = h('div', { class: 'error', role: 'alert' });
 	const split = splitBox(form, categories);
 	const field = (label, input) => h('label', { class: 'field' }, h('span', { class: 'muted' }, label), input);
 	const element = h('div', { class: 'card' },
 		field('תאריך הקבלה', h('input', { type: 'date', value: form.date, max: eveningKey(new Date()), oninput: e => { form.date = e.target.value; } })),
-		field('חנות', h('input', { value: form.shop, list: SHOP_LIST_ID, autocomplete: 'off', oninput: e => { form.shop = e.target.value; } })),
-		h('datalist', { id: SHOP_LIST_ID }, shops.map(shop => h('option', { value: shop }))),
+		h('div', { class: 'field' }, h('span', { class: 'muted' }, 'חנות / ספק'), shopField(form, expenses)),
 		field('סכום הקבלה', h('input', { inputmode: 'numeric', value: form.total, oninput: e => { form.total = e.target.value; split.refresh(); } })),
 		split.element,
 		errors,
@@ -120,13 +136,6 @@ function receiptForm(form, shops, categories) {
 	return { element, showErrors };
 }
 
-function shopNames(expenses) {
-	return [...new Set(expenses.map(expense => expense.shop))].sort((a, b) => a.localeCompare(b, 'he'));
-}
-
-function newestFirst(a, b) {
-	return b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt);
-}
 
 function receiptRow(expense) {
 	const detail = expense.lines.map(line => `${line.category} ${formatMoney(line.amount)}`);
@@ -144,7 +153,7 @@ function receiptList(expenses) {
 		return h('p', { class: 'muted' }, 'עוד אין קבלות');
 	}
 	const months = new Map();
-	for (const expense of [...expenses].sort(newestFirst)) {
+	for (const expense of [...expenses].sort(newestExpenseFirst)) {
 		const key = expense.date.slice(0, 7);
 		months.set(key, [...(months.get(key) || []), expense]);
 	}
@@ -200,7 +209,7 @@ async function renderNew(store) {
 	async function fill() {
 		const expenses = await store.getExpenses();
 		const form = emptyForm();
-		const view = receiptForm(form, shopNames(expenses), await loadCategories(store));
+		const view = receiptForm(form, expenses, await loadCategories(store));
 		const saveButton = h('button', { class: 'primary save-button' }, 'שמור קבלה');
 		saveButton.addEventListener('click', async () => {
 			if (await saveReceipt(store, form, view, null, saveButton)) {
@@ -223,7 +232,7 @@ async function renderEdit(store, id) {
 	const back = () => { location.hash = '#/expenses'; };
 	const categories = await loadCategories(store);
 	const form = formFromExpense(expense, categories.list);
-	const view = receiptForm(form, shopNames(await store.getExpenses()), categories);
+	const view = receiptForm(form, await store.getExpenses(), categories);
 	const saveButton = h('button', { class: 'primary grow' }, 'שמור שינויים');
 	saveButton.addEventListener('click', async () => {
 		if (await saveReceipt(store, form, view, expense, saveButton)) {

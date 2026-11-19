@@ -4,6 +4,7 @@ export const DEFAULT_MENU = Object.freeze([
 	{ name: 'מנה פלאפל', price: 25, image: 'images/falafel.svg', balls: 5 },
 	{ name: 'חצי מנה', price: 12, image: 'images/half.svg', balls: 3 },
 	{ name: 'צלחת חומוס עם פלאפל וסלט', price: 28, image: 'images/hummus.svg', balls: 6 },
+	{ name: 'כדור פלאפל', price: 2, image: 'images/ball.svg', balls: 1 },
 	{ name: 'נקניקיה בלחמניה', price: 15, image: 'images/hotdog.svg' },
 	{ name: "צ'יפס", price: 15, image: 'images/fries.svg' },
 	{ name: 'מלבי', price: 10, image: 'images/malabi.svg' },
@@ -19,6 +20,7 @@ export function isValidImage(image) {
 	return typeof image === 'string' && (BUNDLED_IMAGE.test(image) || PHOTO_IMAGE.test(image));
 }
 
+const CUSTOM_ITEM_PREFIX = 'custom-';
 const PRICE_ERROR = 'המחיר חייב להיות מספר שלם, 0 או יותר';
 
 function pad(n) {
@@ -36,6 +38,14 @@ export function addItem(lines, item) {
 		return [{ ...existing, qty: existing.qty + 1 }, ...others];
 	}
 	return [{ itemId: item.id, name: item.name, price: item.price, qty: 1 }, ...others];
+}
+
+export function customItem(name, price, newId) {
+	return { id: `${CUSTOM_ITEM_PREFIX}${newId()}`, name: name.trim(), price };
+}
+
+export function isCustomLine(line) {
+	return line.itemId.startsWith(CUSTOM_ITEM_PREFIX);
 }
 
 export function changeQty(lines, itemId, delta) {

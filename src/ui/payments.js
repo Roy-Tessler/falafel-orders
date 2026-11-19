@@ -1,14 +1,18 @@
 import { orderTotal, orderSummary, eveningKey } from '../logic/model.js';
-import { METHOD, STATUS, addPayment, clearPayments, paymentStatus, remainingAmount, paidAmount } from '../logic/payments.js';
+import { METHOD, METHOD_LABELS, STATUS, addPayment, clearPayments, paymentStatus, remainingAmount, paidAmount } from '../logic/payments.js';
 import { eveningSummary } from '../logic/stats.js';
 import { h, icon, setChildren, formatMoney, formatDate, formatTime, showToast, SAVE_FAILED } from '../dom.js';
 
 const TAP_GUARD_MS = 600;
-const METHOD_LABELS = { [METHOD.PAYBOX]: 'פייבוקס', [METHOD.CASH]: 'מזומן' };
+const METHODS = Object.values(METHOD);
 
 let s_busy = false;
 let s_lastChangeAt = -Infinity;
 let s_flashId = null;
+
+function methodButtons(onPay) {
+	return METHODS.map(method => h('button', { class: `pay-${method}`, onclick: () => onPay(method) }, icon(method, 'text-icon method-icon'), METHOD_LABELS[method]));
+}
 
 async function applyChange(store, makeOrder, onChange) {
 	if (s_busy || performance.now() - s_lastChangeAt < TAP_GUARD_MS) {
@@ -57,9 +61,7 @@ function otherAmountForm(store, order, onChange) {
 		applyChange(store, () => addPayment(order, method, amount, new Date()), onChange);
 	};
 	return h('div', { class: 'other-form' },
-		h('div', { class: 'row' }, input,
-			h('button', { class: 'pay-paybox', onclick: () => pay(METHOD.PAYBOX) }, 'פייבוקס'),
-			h('button', { class: 'pay-cash', onclick: () => pay(METHOD.CASH) }, 'מזומן')),
+		h('div', { class: 'row' }, input, ...methodButtons(pay)),
 		error);
 }
 
@@ -68,8 +70,7 @@ function actionsBox(store, order, onChange, row) {
 	const payRest = method => applyChange(store, () => addPayment(order, method, remaining, new Date()), onChange);
 	const undo = () => applyChange(store, () => clearPayments(order), onChange);
 	return h('div', { class: 'row pay-actions' },
-		remaining > 0 ? h('button', { class: 'pay-paybox', onclick: () => payRest(METHOD.PAYBOX) }, 'פייבוקס') : null,
-		remaining > 0 ? h('button', { class: 'pay-cash', onclick: () => payRest(METHOD.CASH) }, 'מזומן') : null,
+		...(remaining > 0 ? methodButtons(payRest) : []),
 		remaining > 1 ? h('button', { class: 'small', onclick: e => {
 			e.target.remove();
 			row.append(otherAmountForm(store, order, onChange));
@@ -102,6 +103,7 @@ function totalsBox(orders) {
 	const cell = (label, value, cls) => h('div', { class: 'total-cell' }, h('div', { class: 'muted' }, label), h('strong', { class: cls }, formatMoney(value)));
 	return h('div', { class: 'totals row' },
 		cell('שולם בפייבוקס', s.paidPaybox, 'paid-amount'),
+		cell('שולם בביט', s.paidBit, 'paid-amount'),
 		cell('שולם במזומן', s.paidCash, 'paid-amount'),
 		cell('לא שולם', s.unpaid, s.unpaid > 0 ? 'unpaid' : ''),
 	);

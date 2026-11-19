@@ -1,4 +1,4 @@
-import { addItem, changeQty, removeLine, orderTotal, validateOrder, createOrder } from '../logic/model.js';
+import { addItem, changeQty, removeLine, orderTotal, validateOrder, createOrder, customItem, validateMenuItem } from '../logic/model.js';
 import { validatePayments } from '../logic/payments.js';
 import { h, icon, formatMoney, confirmPanel, showToast, playAnimation, reveal, SAVE_FAILED } from '../dom.js';
 import { emptyDraft, clearStoredDraft } from './draft.js';
@@ -19,14 +19,60 @@ function lineRow(line, flash, handlers) {
 	);
 }
 
-function itemGrid(menu, onAdd) {
+const CUSTOM_NAME_MAX = 40;
+
+function itemGrid(menu, onAdd, onOther) {
 	return h('div', { class: 'item-grid' },
 		menu.map(item => h('button', { class: 'item-button', onclick: () => onAdd(item) },
 			item.image ? h('img', { class: 'item-image', src: item.image, alt: '' }) : null,
 			h('span', { class: 'item-name' }, item.name),
 			h('span', { class: 'item-price' }, formatMoney(item.price)),
 		)),
+		h('button', { class: 'item-button other-item', onclick: onOther },
+			icon('plus', 'item-image'),
+			h('span', { class: 'item-name' }, 'פריט אחר'),
+			h('span', { class: 'item-price' }, 'מחיר לבחירה'),
+		),
 	);
+}
+
+function parsePrice(text) {
+	const trimmed = text.trim();
+	return trimmed === '' ? NaN : Number(trimmed);
+}
+
+function customItemForm(onAdd) {
+	const nameInput = h('input', { placeholder: 'תיאור קצר', 'aria-label': 'תיאור הפריט', maxlength: String(CUSTOM_NAME_MAX), autocomplete: 'off' });
+	const priceInput = h('input', { class: 'price-input', inputmode: 'numeric', placeholder: 'מחיר ₪', 'aria-label': 'מחיר', enterkeyhint: 'done' });
+	const error = h('div', { class: 'error', role: 'alert' });
+	const box = h('div', { class: 'card custom-item-form', hidden: true });
+	const close = () => {
+		box.hidden = true;
+		nameInput.value = '';
+		priceInput.value = '';
+		error.textContent = '';
+	};
+	const add = () => {
+		const item = { name: nameInput.value.trim(), price: parsePrice(priceInput.value) };
+		const errors = validateMenuItem(item);
+		if (errors.length > 0) {
+			error.textContent = errors.join(' · ');
+			return;
+		}
+		onAdd(item);
+		close();
+	};
+	priceInput.addEventListener('keydown', e => { if (e.key === 'Enter') { add(); } });
+	box.append(
+		h('div', { class: 'row' }, h('div', { class: 'grow' }, nameInput), priceInput),
+		error,
+		h('div', { class: 'row' }, h('button', { class: 'primary grow', onclick: add }, 'הוסף'), h('button', { onclick: close }, 'ביטול')),
+	);
+	const open = () => {
+		box.hidden = false;
+		nameInput.focus();
+	};
+	return { element: box, open };
 }
 
 function nameControl(state, onChange) {
@@ -74,12 +120,14 @@ function buildForm(menu, state, onChange) {
 		}
 		totalBox.textContent = text;
 	}
-	const grid = itemGrid(menu, item => {
+	const addToOrder = item => {
 		flash = { itemId: item.id, isNew: !state.lines.some(l => l.itemId === item.id) };
 		state.lines = addItem(state.lines, item);
 		refresh();
 		onChange();
-	});
+	};
+	const customForm = customItemForm(({ name, price }) => addToOrder(customItem(name, price, () => crypto.randomUUID())));
+	const grid = h('div', {}, itemGrid(menu, addToOrder, customForm.open), customForm.element);
 	refresh();
 	return { nameInput, nameField, setName, noteInput, grid, linesBox, totalBox, errorsBox, refresh };
 }

@@ -8,7 +8,8 @@ const OPEN_MINUTES = 18 * 60;
 const SHIFT_MINUTES = 210;
 const MINUTE_MS = 60 * 1000;
 const UNPAID_CHANCE = { today: 0.5, lastEvening: 0.3, older: 0.05 };
-const PAYBOX_SHARE = 0.65;
+const PAYBOX_SHARE = 0.45;
+const BIT_SHARE = 0.2;
 const SPLIT_SHARE = 0.1;
 const PARTIAL_CHANCE = 0.3;
 const ITEM_CHANCES = [0.85, 0.45, 0.5, 0.25, 0.15];
@@ -74,7 +75,9 @@ function paidLater(createdAt, now, random) {
 
 function demoPayments(total, createdAt, unpaidChance, now, random) {
 	const cash = amount => ({ method: METHOD.CASH, amount, at: createdAt.toISOString() });
-	const paybox = amount => ({ method: METHOD.PAYBOX, amount, at: paidLater(createdAt, now, random) });
+	const later = method => amount => ({ method, amount, at: paidLater(createdAt, now, random) });
+	const paybox = later(METHOD.PAYBOX);
+	const bit = later(METHOD.BIT);
 	const part = Math.max(1, Math.min(total - 1, 10 * Math.ceil(random() * Math.floor(total / 10))));
 	if (random() < unpaidChance) {
 		return random() < PARTIAL_CHANCE && total > 1 ? [cash(part)] : [];
@@ -83,7 +86,10 @@ function demoPayments(total, createdAt, unpaidChance, now, random) {
 	if (roll < SPLIT_SHARE && total > 1) {
 		return [cash(part), paybox(total - part)];
 	}
-	return roll < SPLIT_SHARE + PAYBOX_SHARE ? [paybox(total)] : [cash(total)];
+	if (roll < SPLIT_SHARE + PAYBOX_SHARE) {
+		return [paybox(total)];
+	}
+	return roll < SPLIT_SHARE + PAYBOX_SHARE + BIT_SHARE ? [bit(total)] : [cash(total)];
 }
 
 function demoOrder(menu, createdAt, eveningDate, unpaidChance, now, random) {

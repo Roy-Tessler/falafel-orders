@@ -105,3 +105,8 @@ test('csv shows a split payment and the remainder', () => {
 	const row = ordersToCsv([{ ...order, payments: [{ method: 'cash', amount: 20, at: 'x' }, { method: 'paybox', amount: 10, at: 'x' }] }]).split('\r\n')[1];
 	assert.ok(row.includes('"מזומן ₪20 + פייבוקס ₪10","22"'));
 });
+
+test('csv names a Bit payment', () => {
+	const row = ordersToCsv([{ ...order, payments: [{ method: 'bit', amount: 15, at: 'x' }] }]).split('\r\n')[1];
+	assert.ok(row.includes('"ביט ₪15"'));
+});

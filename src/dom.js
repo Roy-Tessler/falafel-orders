@@ -32,6 +32,9 @@ const ICON_PATHS = {
 	minus: 'M5 12h14',
 	check: 'M5 12.5l4.5 4.5L19 7.5',
 	trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
+	cash: 'M3 7h18v10H3zM9.5 12a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M6.5 10v4M17.5 10v4',
+	paybox: 'M3 8l9-4 9 4v8l-9 4-9-4zM3 8l9 4 9-4M12 12v8',
+	bit: 'M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2',
 };
 
 export function icon(name, extraClass = '') {

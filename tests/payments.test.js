@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-	METHOD, STATUS, paidAmount, paidBy, remainingAmount, paymentStatus,
+	METHOD, METHOD_LABELS, STATUS, paidAmount, paidBy, remainingAmount, paymentStatus,
 	addPayment, clearPayments, validatePayments, upgradeOrder,
 } from '../src/logic/payments.js';
 
@@ -9,7 +9,8 @@ const NOW = new Date('2026-11-06T18:00:00Z');
 const order = (payments, price = 70) => ({ lines: [{ itemId: 'a', name: 'x', price, qty: 1 }], payments });
 
 test('methods and statuses', () => {
-	assert.deepEqual(METHOD, { PAYBOX: 'paybox', CASH: 'cash' });
+	assert.deepEqual(METHOD, { PAYBOX: 'paybox', BIT: 'bit', CASH: 'cash' });
+	assert.deepEqual(METHOD_LABELS, { paybox: 'פייבוקס', bit: 'ביט', cash: 'מזומן' });
 	assert.deepEqual(STATUS, { UNPAID: 'unpaid', PARTIAL: 'partial', PAID: 'paid' });
 });
 

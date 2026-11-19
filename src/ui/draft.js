@@ -1,7 +1,7 @@
 const DRAFT_KEY = 'draft';
 
 export function emptyDraft() {
-	return { customerName: '', note: '', lines: [], payMode: 'unpaid', split: { paybox: '', cash: '' } };
+	return { customerName: '', note: '', lines: [], payMode: 'unpaid', split: { paybox: '', bit: '', cash: '' } };
 }
 
 // Versions before v28 kept the unsaved order here; remove it so no old order or name stays behind.

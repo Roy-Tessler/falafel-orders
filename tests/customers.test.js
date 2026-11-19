@@ -31,3 +31,8 @@ test('repeatLines uses current prices and skips removed items', () => {
 	const menu = [{ id: 'a', name: 'מנה פלאפל', price: 25, active: true }, { id: 'gone', name: 'ישן', price: 5, active: false }];
 	assert.deepEqual(repeatLines(lastOrderOf(ORDERS, 'דנה כהן').lines, menu), [{ itemId: 'a', name: 'מנה פלאפל', price: 25, qty: 2 }]);
 });
+
+test('repeatLines keeps an other item with its own name and price', () => {
+	const custom = { itemId: 'custom-1', name: 'פיתה ריקה', price: 4, qty: 2 };
+	assert.deepEqual(repeatLines([custom], []), [custom]);
+});

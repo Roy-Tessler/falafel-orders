@@ -91,6 +91,7 @@ export function eveningSummary(orders) {
 		total,
 		average: orders.length === 0 ? 0 : Math.round(total / orders.length),
 		paidPaybox: sumOf(orders, o => paidBy(o, METHOD.PAYBOX)),
+		paidBit: sumOf(orders, o => paidBy(o, METHOD.BIT)),
 		paidCash: sumOf(orders, o => paidBy(o, METHOD.CASH)),
 		paidTotal: sumOf(orders, paidAmount),
 		unpaid: sumOf(orders, remainingAmount),

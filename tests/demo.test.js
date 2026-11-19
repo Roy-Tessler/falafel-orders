@@ -55,7 +55,7 @@ test('demo has busy evenings and realistic payments', () => {
 	assert.ok(perEvening >= 15 && perEvening <= 35, String(perEvening));
 	const recentUnpaid = orders.filter(o => o.eveningDate === today && paymentStatus(o) !== 'paid').length;
 	assert.ok(recentUnpaid > 0);
-	assert.ok(orders.some(o => paidBy(o, 'paybox') > 0) && orders.some(o => paidBy(o, 'cash') > 0));
+	assert.ok(['paybox', 'bit', 'cash'].every(method => orders.some(o => paidBy(o, method) > 0)));
 	assert.ok(orders.some(o => paymentStatus(o) === 'partial'));
 	assert.ok(orders.some(o => paidBy(o, 'paybox') > 0 && paidBy(o, 'cash') > 0));
 	const paidOld = older.filter(o => paymentStatus(o) === 'paid').length / older.length;

@@ -1,5 +1,5 @@
 import { orderTotal, isValidImage } from './model.js';
-import { METHOD, isMethod, remainingAmount, upgradeOrder } from './payments.js';
+import { METHOD_LABELS, isMethod, remainingAmount, upgradeOrder } from './payments.js';
 import { validateExpense } from './expenses.js';
 
 const APP_ID = 'falafel-orders';
@@ -9,7 +9,6 @@ const INVALID_MESSAGE = 'הקובץ אינו גיבוי תקין';
 const REMINDER_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-const METHOD_LABELS = { [METHOD.PAYBOX]: 'פייבוקס', [METHOD.CASH]: 'מזומן' };
 const CSV_HEADER = ['תאריך', 'שעה', 'שם', 'פריטים', 'סכום', 'תשלום', 'נשאר לשלם', 'הערה'];
 
 export class BackupError extends Error {

@@ -1,10 +1,10 @@
-import { METHOD, validatePayments } from '../logic/payments.js';
-import { h, formatMoney } from '../dom.js';
+import { METHOD, METHOD_LABELS, isMethod, validatePayments } from '../logic/payments.js';
+import { h, icon, formatMoney } from '../dom.js';
 
+const METHODS = Object.values(METHOD);
 const MODES = [
 	['unpaid', 'לא שולם'],
-	['paybox', 'פייבוקס'],
-	['cash', 'מזומן'],
+	...METHODS.map(method => [method, METHOD_LABELS[method]]),
 	['split', 'מפוצל / חלקי'],
 ];
 
@@ -14,17 +14,11 @@ function parseAmount(text) {
 }
 
 export function draftPayments(state, total) {
-	if (state.payMode === 'paybox') {
-		return [{ method: METHOD.PAYBOX, amount: total }];
-	}
-	if (state.payMode === 'cash') {
-		return [{ method: METHOD.CASH, amount: total }];
+	if (isMethod(state.payMode)) {
+		return [{ method: state.payMode, amount: total }];
 	}
 	if (state.payMode === 'split') {
-		return [
-			{ method: METHOD.PAYBOX, amount: parseAmount(state.split.paybox) },
-			{ method: METHOD.CASH, amount: parseAmount(state.split.cash) },
-		];
+		return METHODS.map(method => ({ method, amount: parseAmount(state.split[method]) }));
 	}
 	return [];
 }
@@ -44,7 +38,7 @@ export function paymentChoice(state, getTotal, onChange) {
 		state.payMode = mode;
 		refresh();
 		onChange();
-	} }, label));
+	} }, isMethod(mode) ? icon(mode, 'text-icon method-icon') : null, label));
 
 	function updateRemaining() {
 		const total = getTotal();
@@ -60,11 +54,10 @@ export function paymentChoice(state, getTotal, onChange) {
 		updateRemaining();
 	}
 	splitBox.append(
-		amountField('פייבוקס ₪', METHOD.PAYBOX, state, () => { updateRemaining(); onChange(); }),
-		amountField('מזומן ₪', METHOD.CASH, state, () => { updateRemaining(); onChange(); }),
+		...METHODS.map(method => amountField(`${METHOD_LABELS[method]} ₪`, method, state, () => { updateRemaining(); onChange(); })),
 		remainingLine,
 	);
 	refresh();
-	const element = h('div', {}, h('div', { class: 'payment-choice four', role: 'group', 'aria-label': 'תשלום' }, buttons), splitBox);
+	const element = h('div', {}, h('div', { class: 'payment-choice five', role: 'group', 'aria-label': 'תשלום' }, buttons), splitBox);
 	return { element, refresh, updateRemaining };
 }

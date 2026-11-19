@@ -9,6 +9,7 @@
 	--danger: #c0392b;
 	--border: #e3d7c6;
 	--paid-paybox: #1f6fb2;
+	--paid-bit: #0a7f83;
 	--paid-cash: #2f7d32;
 	--touch: 56px;
 	--radius: 10px;
@@ -311,6 +312,25 @@ th, td {
 	font-size: 1rem;
 }
 
+.other-item {
+	background: var(--surface);
+	border-style: dashed;
+}
+
+.other-item .item-image {
+	color: var(--accent);
+}
+
+.custom-item-form:not([hidden]) {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.custom-item-form .error:empty {
+	display: none;
+}
+
 .order-line {
 	display: flex;
 	align-items: center;
@@ -421,6 +441,11 @@ th, td {
 	border-color: var(--paid-paybox);
 }
 
+.pay-bit {
+	color: var(--paid-bit);
+	border-color: var(--paid-bit);
+}
+
 .pay-cash {
 	color: var(--paid-cash);
 	border-color: var(--paid-cash);
@@ -428,6 +453,11 @@ th, td {
 
 .paid-paybox {
 	color: var(--paid-paybox);
+	font-weight: 600;
+}
+
+.paid-bit {
+	color: var(--paid-bit);
 	font-weight: 600;
 }
 
@@ -541,6 +571,11 @@ select {
 .choice-paybox[aria-pressed="true"] {
 	background: var(--paid-paybox);
 	border-color: var(--paid-paybox);
+}
+
+.choice-bit[aria-pressed="true"] {
+	background: var(--paid-bit);
+	border-color: var(--paid-bit);
 }
 
 .choice-cash[aria-pressed="true"] {
@@ -732,6 +767,11 @@ select {
 	stroke-linecap: round;
 }
 
+.method-icon {
+	stroke-width: 2.5;
+	stroke-linejoin: round;
+}
+
 .text-icon {
 	position: relative;
 	top: 0.08em;
@@ -739,13 +779,21 @@ select {
 	height: 1em;
 }
 
-.payment-choice.four {
-	grid-template-columns: repeat(4, 1fr);
+.payment-choice.five {
+	grid-template-columns: repeat(5, 1fr);
 }
 
 @media (max-width: 700px) {
-	.payment-choice.four {
-		grid-template-columns: repeat(2, 1fr);
+	.payment-choice.five {
+		grid-template-columns: repeat(6, 1fr);
+	}
+
+	.payment-choice.five > :nth-child(-n+3) {
+		grid-column: span 2;
+	}
+
+	.payment-choice.five > :nth-child(n+4) {
+		grid-column: span 3;
 	}
 }
 
@@ -781,11 +829,16 @@ select {
 	font-weight: 700;
 }
 
-.customer-picker .chips {
+.customer-picker .chips,
+.field .chips {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
 	margin-top: 10px;
+}
+
+.field .chips:empty {
+	display: none;
 }
 
 .customer-chip {

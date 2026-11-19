@@ -68,6 +68,7 @@ function eveningSection(orders) {
 			stat('סה"כ', formatMoney(s.total)),
 			stat('ממוצע להזמנה', formatMoney(s.average)),
 			stat('פייבוקס', formatMoney(s.paidPaybox), 'paid-amount'),
+			stat('ביט', formatMoney(s.paidBit), 'paid-amount'),
 			stat('מזומן', formatMoney(s.paidCash), 'paid-amount'),
 			stat('לא שולם', formatMoney(s.unpaid), s.unpaid > 0 ? 'unpaid' : ''),
 			stat('כדורי פלאפל', String(s.falafelBalls)),

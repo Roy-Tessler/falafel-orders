@@ -1,4 +1,5 @@
 import { isInPeriod } from './stats.js';
+import { nameSuggestions, recentNames } from './names.js';
 
 export const OTHER_CATEGORY = 'שונות';
 export const MAX_CATEGORY_LENGTH = 30;
@@ -20,6 +21,15 @@ function splitSum(expense) {
 
 function isFilledText(value) {
 	return typeof value === 'string' && value.trim() !== '';
+}
+
+export function newestExpenseFirst(a, b) {
+	return b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt);
+}
+
+export function shopSuggestions(expenses, text, limit) {
+	const shops = [...expenses].sort(newestExpenseFirst).map(expense => expense.shop);
+	return text.trim() ? nameSuggestions(shops, text, limit) : recentNames(shops, limit);
 }
 
 export function categoryList(customCategories) {

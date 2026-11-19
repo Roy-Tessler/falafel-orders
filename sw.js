@@ -1,4 +1,4 @@
-const CACHE = 'falafel-v31';
+const CACHE = 'falafel-v36';
 const FILES = [
 	'./',
 	'./index.html',
@@ -22,6 +22,7 @@ const FILES = [
 	'./src/logic/demo.js',
 	'./src/logic/payments.js',
 	'./src/logic/customers.js',
+	'./src/logic/names.js',
 	'./src/ui/draft.js',
 	'./src/ui/paymentChoice.js',
 	'./src/ui/customerPicker.js',

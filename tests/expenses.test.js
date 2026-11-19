@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { EXPENSE_CATEGORIES, OTHER_CATEGORY, MAX_CATEGORY_LENGTH, categoryList, withCategory, validateExpense, unsplitAmount, expensesTotal, categoryTotals, expensesInPeriod } from '../src/logic/expenses.js';
+import { EXPENSE_CATEGORIES, OTHER_CATEGORY, MAX_CATEGORY_LENGTH, categoryList, withCategory, validateExpense, unsplitAmount, expensesTotal, categoryTotals, expensesInPeriod, shopSuggestions } from '../src/logic/expenses.js';
 import { PERIOD } from '../src/logic/stats.js';
 
 const receipt = (fields = {}) => ({ id: 'e1', date: '2026-11-08', shop: 'מאפיית אבי', total: 200, lines: [], createdAt: '2026-11-11T10:00:00.000Z', ...fields });
@@ -85,4 +85,19 @@ test('expensesInPeriod uses the receipt date', () => {
 	const expenses = ['2026-10-30', '2026-11-02', '2025-12-01'].map(date => receipt({ date }));
 	assert.deepEqual(expensesInPeriod(expenses, PERIOD.THIS_MONTH, '2026-11-11').map(e => e.date), ['2026-11-02']);
 	assert.deepEqual(expensesInPeriod(expenses, PERIOD.LAST_YEAR, '2026-11-11').map(e => e.date), ['2025-12-01']);
+});
+
+test('shopSuggestions shows recent shops at first, then matches what is typed', () => {
+	const receipt = (shop, date, createdAt = `${date}T10:00:00Z`) => ({ shop, date, createdAt, total: 10, lines: [] });
+	const expenses = [
+		receipt('שופרסל', '2026-11-01'),
+		receipt('מאפיית אבו סאלח', '2026-11-10'),
+		receipt(' שופרסל  ', '2026-11-12'),
+		receipt('ירקות דוד', '2026-11-05'),
+	];
+	assert.deepEqual(shopSuggestions(expenses, '', 5), ['שופרסל', 'מאפיית אבו סאלח', 'ירקות דוד']);
+	assert.deepEqual(shopSuggestions(expenses, '', 2), ['שופרסל', 'מאפיית אבו סאלח']);
+	assert.deepEqual(shopSuggestions(expenses, 'אבו', 5), ['מאפיית אבו סאלח']);
+	assert.deepEqual(shopSuggestions(expenses, 'שופרסל', 5), []);
+	assert.deepEqual(shopSuggestions([], '', 5), []);
 });
